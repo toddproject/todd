@@ -14,9 +14,26 @@ import (
 
 	"github.com/Mierdin/todd/db"
 	log "github.com/Sirupsen/logrus"
+	"github.com/gorilla/mux"
 
 	"github.com/Mierdin/todd/config"
 )
+
+func handlers(t *ToDDApi) *mux.Router {
+	r := mux.NewRouter()
+
+	r.HandleFunc("/v1/agent", t.Agent).Methods("GET")
+	r.HandleFunc("/v1/groups", t.Groups).Methods("GET")
+	r.HandleFunc("/v1/object/list", t.ListObjects).Methods("GET")
+	r.HandleFunc("/v1/object/group", t.ListObjects).Methods("GET")
+	r.HandleFunc("/v1/object/testrun", t.ListObjects).Methods("GET")
+	r.HandleFunc("/v1/object/create", t.CreateObject).Methods("POST")
+	r.HandleFunc("/v1/object/delete", t.DeleteObject).Methods("POST")
+	r.HandleFunc("/v1/testrun/run", t.Run).Methods("POST")
+	r.HandleFunc("/v1/testdata", t.TestData).Methods("GET")
+
+	return r
+}
 
 type ToDDApi struct {
 	cfg config.Config
@@ -34,21 +51,8 @@ func (tapi ToDDApi) Start(cfg config.Config) error {
 
 	tapi.tdb = tdb
 
-	// TODO(mierdin): This needs a lot of work. Not only is the version very static
-	// (which is okay for now until we hit a new version)
-	// but the static routing is gross. Make this not suck
-	http.HandleFunc("/v1/agent", tapi.Agent)
-	http.HandleFunc("/v1/groups", tapi.Groups)
-	http.HandleFunc("/v1/object/list", tapi.ListObjects)
-	http.HandleFunc("/v1/object/group", tapi.ListObjects)
-	http.HandleFunc("/v1/object/testrun", tapi.ListObjects)
-	http.HandleFunc("/v1/object/create", tapi.CreateObject)
-	http.HandleFunc("/v1/object/delete", tapi.DeleteObject)
-	http.HandleFunc("/v1/testrun/run", tapi.Run)
-	http.HandleFunc("/v1/testdata", tapi.TestData)
-
 	serve_url := fmt.Sprintf("%s:%s", tapi.cfg.API.Host, tapi.cfg.API.Port)
 
 	log.Infof("Serving ToDD Server API at: %s\n", serve_url)
-	return http.ListenAndServe(serve_url, nil)
+	return http.ListenAndServe(serve_url, handlers(&tapi))
 }
