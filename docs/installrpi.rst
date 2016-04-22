@@ -71,7 +71,7 @@ Next, use make to compile ToDD. Be patient, the first step can take a while on t
 Run ToDD Agent
 --------------
 
-It's likely that you'll want to run the ToDD agent as a service. Use this systemd unit file as a starting example:
+It's likely that you'll want to run the ToDD agent as a service. Use this systemd unit file as a starting example, and don't forget to enable the service so that it starts automatically at boot!
 
 .. code-block:: text
 
@@ -81,6 +81,8 @@ It's likely that you'll want to run the ToDD agent as a service. Use this system
 
     [Service]
     ExecStart=/usr/bin/todd-agent
+
+    pi@todd-pi-01:~ $ sudo systemctl enable todd-agent
 
 Next, start the service, and check the status to ensure it's running without issues. You should see something like this:
 
