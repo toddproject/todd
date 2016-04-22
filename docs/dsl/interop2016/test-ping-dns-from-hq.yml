@@ -1,0 +1,13 @@
+---
+# Example test file
+type: testrun
+label: test-ping-dns-hq
+spec:
+    targettype: uncontrolled
+    source:
+        name: headquarters
+        app: ping
+        args: "-c 10"
+    target:
+    - 4.2.2.2
+    - 8.8.8.8

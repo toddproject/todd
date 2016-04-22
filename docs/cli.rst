@@ -83,6 +83,9 @@ Or, you could append an agent UUID to this command to see detailed information a
 Create
 ----------
 
+.. IMPORTANT::
+   See the documentation on `ToDD objects <objects.html>`_ for an explanation on what they are and how they work.
+
 Use the ``todd create`` command to upload an object to the ToDD server.
 
 .. code-block:: text
@@ -97,6 +100,9 @@ Use the ``todd create`` command to upload an object to the ToDD server.
 Delete
 ----------
 
+.. IMPORTANT::
+   See the documentation on `ToDD objects <objects.html>`_ for an explanation on what they are and how they work.
+
 Run "todd delete"
 
 Groups
@@ -107,7 +113,11 @@ Run "todd create"
 Objects
 ----------
 
-Run "todd create"
+.. IMPORTANT::
+   See the documentation on `ToDD objects <objects.html>`_ for an explanation on what they are and how they work.
+
+
+Run "todd objects <type>"
 
 Run
 ----------

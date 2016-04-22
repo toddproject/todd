@@ -1,0 +1,14 @@
+---
+# Example test file
+type: testrun
+label: test-dc-hq-bandwidth
+spec:
+    targettype: group
+    source:
+        name: datacenter
+        app: iperf
+        args: "-c {{ target }}"
+    target:
+        name: headquarters
+        app: iperf
+        args: "-s"

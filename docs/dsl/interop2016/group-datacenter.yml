@@ -1,0 +1,7 @@
+---
+type: group
+label: datacenter
+spec:
+    group: datacenter
+    matches:
+    - within_subnet: "172.17.0.0/16"
