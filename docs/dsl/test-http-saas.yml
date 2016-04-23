@@ -1,0 +1,13 @@
+---
+# Example test file
+type: testrun
+label: test-http-saas
+spec:
+    targettype: uncontrolled
+    source:
+        name: rpi
+        app: http
+        args: ""
+    target:
+    - salesforce.com
+    - portal.office.com

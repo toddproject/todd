@@ -53,6 +53,7 @@ func serveAssets(cfg config.Config) map[string]map[string]string {
 		assets: []string{
 			"ping",
 			"iperf",
+			"http",
 		},
 	}
 
