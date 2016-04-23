@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+# Copyright 2016 Matt Oswalt. Use or modification of this
+# source code is governed by the license provided here:
+# https://github.com/Mierdin/todd/blob/master/LICENSE
+
+check() {
+    echo "Running in check mode"
+    command -v curl >/dev/null 2>&1 || { echo >&2 "curl is not installed. Exiting."; exit 1; }
+    echo "Check mode PASSED"
+    exit 0
+}
+
+if [[ $1 == "check" ]];
+  then
+    check
+fi
+
+# The first argument after the testlet name will ALWAYS be the target. So, $1 is always the target, and all arguments from $2 and up should be passed into the app command
+app_args="$@"
+app_args=${app_args#$0 } # Remove Testlet name
+app_args=${app_args#$1 } # Remove Target
+# at this point, app_args should be all that's left
+
+output=$(curl -s -o /dev/null -w \
+    '\n
+    \nHTTP Code: %{http_code} _ENDA\n
+    \nLookup time: %{time_namelookup} _ENDB\n
+    \nConnect time: %{time_connect} _ENDC\n
+    \nPreXfer time: %{time_pretransfer} _ENDD\n
+    \nStartXfer time: %{time_starttransfer} _ENDE\n
+    \nTotal time: %{time_total} _ENDF\n
+    \nContent type: %{content_type} _ENDG\n
+    \nHTTP Connect: %{http_connect} _ENDH\n
+    \nNumber of Connections: %{num_connects} _ENDI\n
+    \nNumber of Redirections: %{num_redirects} _ENDJ\n
+    \nSize of download: %{size_download} _ENDK\n
+    \nSize of headers: %{size_header} _ENDL\n
+    \nSize of request: %{size_request} _ENDM\n
+    \nSize of upload: %{size_upload} _ENDN\n
+    \nAvg Download Speed: %{speed_download} _ENDO\n
+    \nAvg Upload Speed: %{speed_upload} _ENDP\n
+    \nRedirect time: %{time_redirect} _ENDQ\n
+    \nTime to start transfer: %{time_starttransfer} _ENDR\n
+    \nLast URL Fetched: %{url_effective} _ENDS\n
+    \n' \
+http://$1) #TODO(mierdin): how to handle https?
+
+http_code=$(echo $output | sed -n 's/.*HTTP Code: \(.*\) _ENDA.*/\1/p')
+time_namelookup=$(echo $output | sed -n 's/.*Lookup time: \(.*\) _ENDB.*/\1/p')
+time_connect=$(echo $output | sed -n 's/.*Connect time: \(.*\) _ENDC.*/\1/p')
+time_pretransfer=$(echo $output | sed -n 's/.*PreXfer time: \(.*\) _ENDD.*/\1/p')
+time_starttransfer=$(echo $output | sed -n 's/.*StartXfer time: \(.*\) _ENDE.*/\1/p')
+time_total=$(echo $output | sed -n 's/.*Total time: \(.*\) _ENDF.*/\1/p')
+content_type=$(echo $output | sed -n 's/.*Content type: \(.*\) _ENDG.*/\1/p')
+http_connect=$(echo $output | sed -n 's/.*HTTP Connect: \(.*\) _ENDH.*/\1/p')
+num_connects=$(echo $output | sed -n 's/.*Number of Connections: \(.*\) _ENDI.*/\1/p')
+num_redirects=$(echo $output | sed -n 's/.*Number of Redirections: \(.*\) _ENDJ.*/\1/p')
+size_download=$(echo $output | sed -n 's/.*Size of download:: \(.*\) _ENDK.*/\1/p')
+size_header=$(echo $output | sed -n 's/.*Size of headers: \(.*\) _ENDL.*/\1/p')
+size_request=$(echo $output | sed -n 's/.*Size of request: \(.*\) _ENDM.*/\1/p')
+size_upload=$(echo $output | sed -n 's/.*Size of upload: \(.*\) _ENDN.*/\1/p')
+speed_download=$(echo $output | sed -n 's/.*Avg Download Speed: \(.*\) _ENDO.*/\1/p')
+speed_upload=$(echo $output | sed -n 's/.*Avg Upload Speed: \(.*\) _ENDP.*/\1/p')
+time_redirect=$(echo $output | sed -n 's/.*Redirect time: \(.*\) _ENDQ.*/\1/p')
+time_starttransfer=$(echo $output | sed -n 's/.*Time to start transfer: \(.*\) _ENDR.*/\1/p')
+url_effective=$(echo $output | sed -n 's/.*Last URL Fetched: \(.*\) _ENDS.*/\1/p')
+
+teslet_data='{
+    "http_code":"'$http_code'",
+    "time_namelookup":"'$time_namelookup'",
+    "time_connect":"'$time_connect'",
+    "time_pretransfer":"'$time_pretransfer'",
+    "time_starttransfer":"'$time_starttransfer'",
+    "time_total":"'$time_total'",
+    "content_type":"'$content_type'",
+    "http_connect":"'$http_connect'",
+    "num_connects":"'$num_connects'",
+    "num_redirects":"'$num_redirects'",
+    "size_download":"'$size_download'",
+    "size_header":"'$size_header'",
+    "size_request":"'$size_request'",
+    "size_upload":"'$size_upload'",
+    "speed_download":"'$speed_download'",
+    "speed_upload":"'$speed_upload'",
+    "time_redirect":"'$time_redirect'",
+    "time_starttransfer":"'$time_starttransfer'",
+    "url_effective":"'$url_effective'"
+}'
+echo $teslet_data
