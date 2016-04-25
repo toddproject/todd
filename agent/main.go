@@ -68,7 +68,14 @@ func main() {
 	var tc = comms.NewToDDComms(cfg)
 
 	// Spawn goroutine to listen for tasks issued by server
-	go tc.CommsPackage.ListenForTasks(uuid) // Need to convert this to a generic "listenfortasks" function. This will offload incoming messages
+	go func() {
+		for {
+			tc.CommsPackage.ListenForTasks(uuid)
+			if err != nil {
+				log.Warn("ListenForTasks reported a failure. Trying again...")
+			}
+		}
+	}()
 
 	// Watch for changes to group membership
 	go tc.CommsPackage.WatchForGroup()
@@ -97,7 +104,10 @@ func main() {
 		}
 
 		// Advertise this agent
-		tc.CommsPackage.AdvertiseAgent(me)
+		err := tc.CommsPackage.AdvertiseAgent(me)
+		if err != nil {
+			log.Error("Failed to advertise agent after several retries")
+		}
 
 		time.Sleep(15 * time.Second) // TODO(moswalt): make configurable
 	}

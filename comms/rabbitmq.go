@@ -26,6 +26,10 @@ import (
 	"github.com/streadway/amqp"
 )
 
+const (
+	connectRetry = 3
+)
+
 // newRabbitMQComms is a factory function that produces a new instance of rabbitMQComms with the configuration
 // loaded and ready to be used.
 func newRabbitMQComms(cfg config.Config) *rabbitMQComms {
@@ -39,28 +43,33 @@ type rabbitMQComms struct {
 }
 
 // AdvertiseAgent will place an agent advertisement message on the message queue
-func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) {
+func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) error {
 
-	queue_url := fmt.Sprintf(
-		"amqp://%s:%s@%s:%s/",
+	queue_url := fmt.Sprintf("amqp://%s:%s@%s:%s/",
 		rmq.config.AMQP.User,
 		rmq.config.AMQP.Password,
 		rmq.config.AMQP.Host,
 		rmq.config.AMQP.Port,
 	)
 
+	retries := 0
 	conn, err := amqp.Dial(queue_url)
-	if err != nil {
-		log.Error(err)
-		log.Error("Failed to connect to RabbitMQ")
-		os.Exit(1)
+	for err != nil {
+		if retries > connectRetry {
+			log.Error("Failed to connect to RabbitMQ")
+			return err
+		}
+
+		retries++
+		log.Warnf("Failure connecting to RabbitMQ - retry #%s", retries)
+		time.Sleep(1 * time.Second)
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Error("Failed to open a channel")
-		os.Exit(1)
+		return err
 	}
 
 	defer ch.Close()
@@ -76,7 +85,7 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) {
 	)
 	if err != nil {
 		log.Error("Failed to declare an exchange")
-		os.Exit(1)
+		return err
 	}
 
 	q, err := ch.QueueDeclare(
@@ -89,7 +98,7 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) {
 	)
 	if err != nil {
 		log.Error("Failed to declare a queue")
-		os.Exit(1)
+		return err
 	}
 
 	err = ch.QueueBind(
@@ -101,14 +110,14 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) {
 	)
 	if err != nil {
 		log.Error("Failed to bind exchange to queue")
-		os.Exit(1)
+		return err
 	}
 
 	// Marshal agent struct to JSON
 	json_data, err := json.Marshal(me)
 	if err != nil {
 		log.Error("Failed to marshal agent data from queue")
-		os.Exit(1)
+		return err
 	}
 
 	err = ch.Publish(
@@ -123,10 +132,12 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) {
 		})
 	if err != nil {
 		log.Error("Failed to publish agent advertisement")
-		os.Exit(1)
+		return err
 	}
 
 	log.Infof("AGENTADV -- %s", time.Now().UTC())
+
+	return nil
 }
 
 // ListenForAgent will listen on the message queue for new agent advertisements.
@@ -361,7 +372,7 @@ func (rmq rabbitMQComms) SendTask(queueName string, task tasks.Task) {
 }
 
 // ListenForTasks is a method that recieves task notices from the server
-func (rmq rabbitMQComms) ListenForTasks(uuid string) {
+func (rmq rabbitMQComms) ListenForTasks(uuid string) error {
 
 	queue_url := fmt.Sprintf(
 		"amqp://%s:%s@%s:%s/",
@@ -371,11 +382,17 @@ func (rmq rabbitMQComms) ListenForTasks(uuid string) {
 		rmq.config.AMQP.Port,
 	)
 
+	retries := 0
 	conn, err := amqp.Dial(queue_url)
-	if err != nil {
-		log.Error(err)
-		log.Error("Failed to connect to RabbitMQ")
-		os.Exit(1)
+	for err != nil {
+		if retries > connectRetry {
+			log.Error("Failed to connect to RabbitMQ")
+			return err
+		}
+
+		retries++
+		log.Warnf("Failure connecting to RabbitMQ - retry #%s", retries)
+		time.Sleep(1 * time.Second)
 	}
 	defer conn.Close()
 
@@ -574,7 +591,15 @@ rereg:
 	if group == "" {
 		group = "null"
 	}
-	go rmq.ListenForGroupTasks(group, dereg)
+
+	go func() {
+		for {
+			rmq.ListenForGroupTasks(group, dereg)
+			if err != nil {
+				log.Warn("ListenForGroupTasks reported a failure. Trying again...")
+			}
+		}
+	}()
 
 	// Loop until the unackedGroup flag is set
 	for {
@@ -596,7 +621,7 @@ rereg:
 }
 
 // ListenForGroupTasks is a method that recieves tasks from the server that are intended for groups
-func (rmq rabbitMQComms) ListenForGroupTasks(groupName string, dereg chan bool) {
+func (rmq rabbitMQComms) ListenForGroupTasks(groupName string, dereg chan bool) error {
 
 	queue_url := fmt.Sprintf(
 		"amqp://%s:%s@%s:%s/",
@@ -606,11 +631,17 @@ func (rmq rabbitMQComms) ListenForGroupTasks(groupName string, dereg chan bool) 
 		rmq.config.AMQP.Port,
 	)
 
+	retries := 0
 	conn, err := amqp.Dial(queue_url)
-	if err != nil {
-		log.Error(err)
-		log.Error("Failed to connect to RabbitMQ")
-		os.Exit(1)
+	for err != nil {
+		if retries > connectRetry {
+			log.Error("Failed to connect to RabbitMQ")
+			return err
+		}
+
+		retries++
+		log.Warnf("Failure connecting to RabbitMQ - retry #%s", retries)
+		time.Sleep(1 * time.Second)
 	}
 	defer conn.Close()
 

@@ -29,13 +29,13 @@ type CommsPackage interface {
 	// TODO(mierdin) best way to document interface or function args?
 
 	// (agent advertisement to advertise)
-	AdvertiseAgent(defs.AgentAdvert)
+	AdvertiseAgent(defs.AgentAdvert) error
 
 	// (map of assets:hashes)
 	ListenForAgent(map[string]map[string]string)
 
 	// (uuid)
-	ListenForTasks(string)
+	ListenForTasks(string) error
 
 	// (queuename, task)
 	SendTask(string, tasks.Task)
@@ -43,7 +43,7 @@ type CommsPackage interface {
 	// watches for new group membership instructions in the cache and reregisters
 	WatchForGroup()
 
-	ListenForGroupTasks(string, chan bool)
+	ListenForGroupTasks(string, chan bool) error
 
 	ListenForResponses(*chan bool)
 	SendResponse(responses.Response)
