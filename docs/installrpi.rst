@@ -82,14 +82,15 @@ It's likely that you'll want to run the ToDD agent as a service. Use this system
     [Service]
     ExecStart=/usr/bin/todd-agent
 
-    pi@todd-pi-01:~ $ sudo systemctl enable todd-agent
+    [Install]
+    WantedBy=network.target
 
-Next, start the service, and check the status to ensure it's running without issues. You should see something like this:
+Next, enable and start the service, and check the status to ensure it's running without issues. You should see something like this:
 
 .. code-block:: text
 
+    pi@todd-pi-01:~ $ sudo systemctl enable todd-agent
     pi@todd-pi-01:~ $ sudo systemctl start todd-agent.service
-
     pi@todd-pi-01:~ $ sudo systemctl status todd-agent
      todd-agent.service - ToDD Agent
        Loaded: loaded (/etc/systemd/system/todd-agent.service; static)
