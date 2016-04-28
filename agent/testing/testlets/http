@@ -44,7 +44,7 @@ output=$(curl -s -o /dev/null -w \
     \nTime to start transfer: %{time_starttransfer} _ENDR\n
     \nLast URL Fetched: %{url_effective} _ENDS\n
     \n' \
-http://$1) #TODO(mierdin): how to handle https?
+$1)
 
 http_code=$(echo $output | sed -n 's/.*HTTP Code: \(.*\) _ENDA.*/\1/p')
 time_namelookup=$(echo $output | sed -n 's/.*Lookup time: \(.*\) _ENDB.*/\1/p')
