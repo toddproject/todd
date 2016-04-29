@@ -136,6 +136,4 @@ then
 
     starttodd 3 /etc/todd/server-interop.cfg /etc/todd/agent-interop.cfg
 
-    sleep 2
-
 fi

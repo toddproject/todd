@@ -1,11 +1,11 @@
 ---
 # Example test file
 type: testrun
-label: test-ping-dns-dc
+label: test-ping
 spec:
     targettype: uncontrolled
     source:
-        name: datacenter
+        name: rpi
         app: ping
         args: "-c 10"
     target:

@@ -1,7 +1,7 @@
 ---
 # Example test file
 type: testrun
-label: test-dc-hq-bandwidth
+label: test-bandwidth
 spec:
     targettype: group
     source:
@@ -9,6 +9,6 @@ spec:
         app: iperf
         args: "-c {{ target }}"
     target:
-        name: headquarters
+        name: rpi
         app: iperf
         args: "-s"

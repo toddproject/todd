@@ -3,12 +3,11 @@
 type: testrun
 label: test-http
 spec:
-    targettype: group
+    targettype: uncontrolled
     source:
-        name: headquarters
-        app: curl
-        args: "-c"
+        name: rpi
+        app: http
+        args: ""
     target:
-        name: datacenter
-        app: nginx
-        args: "-s"
+    - salesforce.com
+    - portal.office.com
