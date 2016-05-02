@@ -9,14 +9,15 @@ ToDD Documentation
 .. toctree::
    :maxdepth: 2
 
+   cli.rst
+   comms.rst
+   configure.rst
    design.rst
    install.rst
    installrpi.rst
-   configure.rst
-   cli.rst
    objects.rst
-   testlets.rst
    resources.rst
+   testlets.rst
 
 This is ToDD's documentation. The docs are a work in progress, but check back soon! I'll be updating this heavily over the next few days and weeks.
 
