@@ -1,6 +1,7 @@
 {
 	"ImportPath": "github.com/Mierdin/todd",
-	"GoVersion": "go1.5.2",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v63",
 	"Packages": [
 		"./..."
 	],
@@ -14,6 +15,16 @@
 			"ImportPath": "github.com/codegangsta/cli",
 			"Comment": "1.2.0-219-ga294348",
 			"Rev": "a2943485b110df8842045ae0600047f88a3a56a1"
+		},
+		{
+			"ImportPath": "github.com/coreos/etcd/Godeps/_workspace/src/github.com/ugorji/go/codec",
+			"Comment": "v2.3.0-alpha.0-5-g7c9e92d",
+			"Rev": "7c9e92d1d589195cda0e590a31880d889772e92a"
+		},
+		{
+			"ImportPath": "github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context",
+			"Comment": "v2.3.0-alpha.0-5-g7c9e92d",
+			"Rev": "7c9e92d1d589195cda0e590a31880d889772e92a"
 		},
 		{
 			"ImportPath": "github.com/coreos/etcd/client",
@@ -31,12 +42,8 @@
 			"Rev": "7c9e92d1d589195cda0e590a31880d889772e92a"
 		},
 		{
-			"ImportPath": "github.com/gorilla/context",
-			"Rev": "50c25fb3b2b3b3cc724e9b6ac75fb44b3bccd0da"
-		},
-		{
-			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "1f512fc3f05332ba7117626cdfb4e07474e58e60"
 		},
 		{
 			"ImportPath": "github.com/influxdata/influxdb/client/v2",
@@ -55,23 +62,35 @@
 		},
 		{
 			"ImportPath": "github.com/mattn/go-sqlite3",
-			"Comment": "v1.1.0-38-gc5aee96",
-			"Rev": "c5aee9649735e8dadac55eb968ccebd9fa29a881"
+			"Comment": "v1.1.0-67-g7204887",
+			"Rev": "7204887cf3a42df1cfaa5505dc3a3427f6dded8b"
 		},
 		{
 			"ImportPath": "github.com/streadway/amqp",
 			"Rev": "6a378341a305bfbc252e8a6638f16cf443221997"
 		},
 		{
-			"ImportPath": "github.com/ugorji/go/codec",
-			"Rev": "f1f1a805ed361a0e078bb537e4ea78cd37dcf065"
-		},
-		{
 			"ImportPath": "golang.org/x/net/context",
 			"Rev": "62ac18b461605b4be188bbc7300e9aa2bc836cd4"
 		},
 		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "b776ec39b3e54652e09028aaaaac9757f4f8211a"
+		},
+		{
 			"ImportPath": "gopkg.in/gcfg.v1",
+			"Rev": "0ef1a8547f99b94fac9af5377dd72febba18f37c"
+		},
+		{
+			"ImportPath": "gopkg.in/gcfg.v1/scanner",
+			"Rev": "0ef1a8547f99b94fac9af5377dd72febba18f37c"
+		},
+		{
+			"ImportPath": "gopkg.in/gcfg.v1/token",
+			"Rev": "0ef1a8547f99b94fac9af5377dd72febba18f37c"
+		},
+		{
+			"ImportPath": "gopkg.in/gcfg.v1/types",
 			"Rev": "0ef1a8547f99b94fac9af5377dd72febba18f37c"
 		},
 		{
