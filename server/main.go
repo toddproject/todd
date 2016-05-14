@@ -49,7 +49,10 @@ func main() {
 
 	todd_version := "0.0.1"
 
-	cfg := config.GetConfig(arg_config)
+	err, cfg := config.GetConfig(arg_config)
+	if err != nil {
+		os.Exit(1)
+	}
 
 	// Start serving collectors and testlets, and retrieve map of names and hashes
 	assets := serveAssets(cfg)
