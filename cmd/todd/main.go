@@ -56,13 +56,13 @@ func main() {
 						"host": host,
 						"port": port,
 					},
-					c.Args().First(),
+					c.Args().Get(0),
 				)
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
-				clientapi.DisplayAgents(agents, !(c.Args().First() == ""))
+				clientapi.DisplayAgents(agents, !(c.Args().Get(0) == ""))
 			},
 		},
 
@@ -77,7 +77,7 @@ func main() {
 						"host": host,
 						"port": port,
 					},
-					c.Args().First(),
+					c.Args().Get(0),
 				)
 			},
 		},
@@ -92,8 +92,8 @@ func main() {
 						"host": host,
 						"port": port,
 					},
-					c.Args()[0],
-					c.Args()[1],
+					c.Args().Get(0),
+					c.Args().Get(1),
 				)
 			},
 		},
@@ -122,7 +122,7 @@ func main() {
 						"host": host,
 						"port": port,
 					},
-					c.Args()[0],
+					c.Args().Get(0),
 				)
 			},
 		},
@@ -162,7 +162,7 @@ func main() {
 						"sourceApp":   c.String("source-app"),
 						"sourceArgs":  c.String("source-args"),
 					},
-					c.Args()[0],
+					c.Args().Get(0),
 					c.Bool("j"),
 					c.Bool("y"),
 				)
