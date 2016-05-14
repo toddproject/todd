@@ -22,7 +22,7 @@ func (capi ClientApi) Delete(conf map[string]string, objType, objLabel string) {
 
 	// If insufficient subargs were provided, error out
 	if objType == "" || objLabel == "" {
-		fmt.Println("Error, need to provide type and label")
+		fmt.Println("Error, need to provide type and label (Ex. 'todd delete group datacenter')")
 		os.Exit(1)
 	}
 
