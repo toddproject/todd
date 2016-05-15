@@ -88,12 +88,13 @@ func (tapi ToDDApi) DeleteObject(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&deleteInfo)
 	if err != nil {
-		panic(err)
+		log.Errorln(err)
+		http.Error(w, "Internal Error", 500)
 	}
 
 	err = tapi.tdb.DeleteObject(deleteInfo["label"], deleteInfo["type"])
 	if err != nil {
-		log.Error(err)
-		panic(err)
+		log.Errorln(err)
+		http.Error(w, "Internal Error", 500)
 	}
 }

@@ -87,7 +87,7 @@ func main() {
 			Name:  "delete",
 			Usage: "Delete ToDD object",
 			Action: func(c *cli.Context) {
-				clientapi.Delete(
+				err := clientapi.Delete(
 					map[string]string{
 						"host": host,
 						"port": port,
@@ -95,6 +95,10 @@ func main() {
 					c.Args().Get(0),
 					c.Args().Get(1),
 				)
+				if err != nil {
+					fmt.Println("ERROR - Are you sure you provided the right object type and/or label?")
+					os.Exit(1)
+				}
 			},
 		},
 
