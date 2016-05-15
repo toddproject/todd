@@ -49,7 +49,7 @@ func init() {
 
 func main() {
 
-	err, cfg := config.GetConfig(arg_config)
+	cfg, err := config.GetConfig(arg_config)
 	if err != nil {
 		os.Exit(1)
 	}
