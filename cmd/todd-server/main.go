@@ -49,7 +49,7 @@ func main() {
 
 	todd_version := "0.0.1"
 
-	err, cfg := config.GetConfig(arg_config)
+	cfg, err := config.GetConfig(arg_config)
 	if err != nil {
 		os.Exit(1)
 	}
