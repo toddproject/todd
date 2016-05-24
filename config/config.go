@@ -76,6 +76,7 @@ func GetConfig(cfgpath string) (Config, error) {
 	err := gcfg.ReadFileInto(&cfg, cfgpath)
 	if err != nil {
 		log.Errorf("Error retrieving configuration at %s", cfgpath)
+		log.Errorf(err)
 	}
 
 	return cfg, err
