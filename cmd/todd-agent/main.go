@@ -49,7 +49,10 @@ func init() {
 
 func main() {
 
-	cfg := config.GetConfig(arg_config)
+	cfg, err := config.GetConfig(arg_config)
+	if err != nil {
+		os.Exit(1)
+	}
 
 	// Set up cache
 	var ac = cache.NewAgentCache(cfg)

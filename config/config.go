@@ -70,14 +70,14 @@ type Config struct {
 	LocalResources LocalResources
 }
 
-func GetConfig(cfgpath string) Config {
+func GetConfig(cfgpath string) (Config, error) {
 	var cfg Config
 
 	err := gcfg.ReadFileInto(&cfg, cfgpath)
 	if err != nil {
-		log.Error("Error retrieving configuration")
-		panic("Error retrieving configuration")
+		log.Errorf("Error retrieving configuration at %s", cfgpath)
+		log.Error(err)
 	}
 
-	return cfg
+	return cfg, err
 }
