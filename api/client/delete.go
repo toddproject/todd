@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -64,7 +63,7 @@ func (capi ClientApi) Delete(conf map[string]string, objType, objLabel string) e
 		fmt.Println("[OK]")
 	} else {
 		fmt.Println("500 Server Error")
-		return errors.new("500 Server Error")
+		return errors.New("500 Server Error")
 	}
 
 	return nil
