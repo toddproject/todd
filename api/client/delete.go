@@ -58,12 +58,12 @@ func (capi ClientApi) Delete(conf map[string]string, objType, objLabel string) e
 	}
 	defer resp.Body.Close()
 
-	// Print a regular OK message if object was written successfully - else print some debug info
+	// Print a regular OK message if object was written successfully - else print the HTTP status code
 	if resp.Status == "200 OK" {
 		fmt.Println("[OK]")
 	} else {
-		fmt.Println("500 Server Error")
-		return errors.New("500 Server Error")
+		fmt.Println(resp.Status)
+		return errors.New(resp.Status)
 	}
 
 	return nil
