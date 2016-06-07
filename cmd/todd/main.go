@@ -72,13 +72,17 @@ func main() {
 			Usage: "Create ToDD object (group, testrun, etc.)",
 			Action: func(c *cli.Context) {
 
-				clientapi.Create(
+				err := clientapi.Create(
 					map[string]string{
 						"host": host,
 						"port": port,
 					},
 					c.Args().Get(0),
 				)
+				if err != nil {
+					fmt.Println("Unable to create object on ToDD server.")
+					os.Exit(1)
+				}
 			},
 		},
 

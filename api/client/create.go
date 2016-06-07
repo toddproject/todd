@@ -23,19 +23,21 @@ import (
 
 // Create is responsible for pushing a ToDD object to the server for eventual storage in whatever database is being used
 // It will send a ToddObject rendered as JSON to the "createobject" method of the ToDD API
-func (capi ClientApi) Create(conf map[string]string, yamlFileName string) {
+func (capi ClientApi) Create(conf map[string]string, yamlFileName string) error {
 
 	// Pull YAML from either stdin or from the filename if stdin is empty
 	yamlDef, err := getYAMLDef(yamlFileName)
 	if err != nil {
-		panic(err)
+		fmt.Println("Unable to read object definition")
+		return err
 	}
 
 	// Unmarshal YAML file into a BaseObject so we can peek into the metadata
 	var baseobj objects.BaseObject
 	err = yaml.Unmarshal(yamlDef, &baseobj)
 	if err != nil {
-		panic(err)
+		fmt.Println("YAML file not in correct format")
+		return err
 	}
 
 	// finalobj represents the object being created, regardless of type.
@@ -47,14 +49,16 @@ func (capi ClientApi) Create(conf map[string]string, yamlFileName string) {
 		var group_obj objects.GroupObject
 		err = yaml.Unmarshal(yamlDef, &group_obj)
 		if err != nil {
-			panic(err)
+			fmt.Println("Group YAML object not in correct format")
+			return err
 		}
 		finalobj = group_obj
 	case "testrun":
 		var testrun_obj objects.TestRunObject
 		err = yaml.Unmarshal(yamlDef, &testrun_obj)
 		if err != nil {
-			panic(err)
+			fmt.Println("Testrun YAML object not in correct format")
+			return err
 		}
 
 		if testrun_obj.Spec.TargetType == "group" {
@@ -73,14 +77,14 @@ func (capi ClientApi) Create(conf map[string]string, yamlFileName string) {
 
 	default:
 		fmt.Println("Invalid object type provided")
-		os.Exit(1)
+		return error.New("Invalid object type provided")
 	}
 
 	// Marshal the final object into JSON
 	json_str, err := json.Marshal(finalobj)
 	if err != nil {
-
-		panic(err)
+		fmt.Println("Problem marshalling the final object into JSON")
+		return err
 	}
 
 	// Construct API request, and send POST to server for this object
@@ -90,26 +94,23 @@ func (capi ClientApi) Create(conf map[string]string, yamlFileName string) {
 	var jsonByte = []byte(json_str)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonByte))
 	if err != nil {
-		panic(err)
+		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer resp.Body.Close()
 
-	// Print a regular OK message if object was written successfully - else print some debug info
+	// Print a regular OK message if object was created successfully - else print the HTTP status code
 	if resp.Status == "200 OK" {
 		fmt.Println("[OK]")
 	} else {
-		fmt.Println("response Status:", resp.Status)
-		fmt.Println("response Headers:", resp.Header)
-		body, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println("response Body:", string(body))
-		os.Exit(1)
+		fmt.Println(resp.Status)
+		return errors.New(resp.Status)
 	}
 
 }
@@ -124,7 +125,7 @@ func getYAMLDef(yamlFileName string) ([]byte, error) {
 	// Quit if there's nothing on stdin, and there's no arg either
 	if yamlFileName == "" {
 		fmt.Println("Please provide definition file")
-		os.Exit(1)
+		return nil, error.New("Object definition file not provided")
 	}
 
 	// Read YAML file
