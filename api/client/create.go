@@ -11,6 +11,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -77,7 +78,7 @@ func (capi ClientApi) Create(conf map[string]string, yamlFileName string) error 
 
 	default:
 		fmt.Println("Invalid object type provided")
-		return error.New("Invalid object type provided")
+		return errors.New("Invalid object type provided")
 	}
 
 	// Marshal the final object into JSON
@@ -113,6 +114,7 @@ func (capi ClientApi) Create(conf map[string]string, yamlFileName string) error 
 		return errors.New(resp.Status)
 	}
 
+	return nil
 }
 
 // getYAMLDef reads YAML from either stdin or from the filename if stdin is empty
@@ -125,7 +127,7 @@ func getYAMLDef(yamlFileName string) ([]byte, error) {
 	// Quit if there's nothing on stdin, and there's no arg either
 	if yamlFileName == "" {
 		fmt.Println("Please provide definition file")
-		return nil, error.New("Object definition file not provided")
+		return nil, errors.New("Object definition file not provided")
 	}
 
 	// Read YAML file
