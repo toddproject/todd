@@ -84,7 +84,11 @@ next:
 	}
 
 	// Send notifications to each agent to let them know what group they're in, so they can cache it
-	var tc = comms.NewToDDComms(cfg)
+	tc, err := comms.NewToDDComms(cfg)
+	if err != nil {
+		log.Fatalf("Error setting up ToDD Comms during group calculation")
+	}
+
 	for uuid, groupName := range groupmap {
 		setGroupTask := tasks.SetGroupTask{
 			GroupName: groupName,

@@ -1,1 +1,0 @@
-In order to compile the agent on Raspberry Pi, make sure to set the environment variable GOARM to "5"

@@ -67,6 +67,9 @@ Next, use make to compile ToDD. Be patient, the first step can take a while on t
     make
     sudo make install
 
+.. NOTE::
+
+    On some versions of Go, you may need to set the environment variable "GOARM" to "5".
 
 Run ToDD Agent
 --------------

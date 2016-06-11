@@ -68,7 +68,10 @@ func main() {
 	go testing.WatchForFinishedTestRuns(cfg)
 
 	// Construct comms package
-	var tc = comms.NewToDDComms(cfg)
+	tc, err := comms.NewToDDComms(cfg)
+	if err != nil {
+		os.Exit(1)
+	}
 
 	// Spawn goroutine to listen for tasks issued by server
 	go func() {

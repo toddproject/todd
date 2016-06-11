@@ -11,7 +11,7 @@
 package comms
 
 import (
-	"os"
+	"errors"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -26,19 +26,21 @@ import (
 // represents a list of things that the server and agents do on the message queue.
 type CommsPackage interface {
 
-	// TODO(mierdin) best way to document interface or function args?
+	// TODO(mierdin) best way to document interface or function args? I've tried to document
+	// them minimally below, but would like a better way to document the meaning behind
+	// the arguments defined here.
 
 	// (agent advertisement to advertise)
 	AdvertiseAgent(defs.AgentAdvert) error
 
 	// (map of assets:hashes)
-	ListenForAgent(map[string]map[string]string)
+	ListenForAgent(map[string]map[string]string) error
 
 	// (uuid)
 	ListenForTasks(string) error
 
 	// (queuename, task)
-	SendTask(string, tasks.Task)
+	SendTask(string, tasks.Task) error
 
 	// watches for new group membership instructions in the cache and reregisters
 	WatchForGroup()
@@ -56,7 +58,7 @@ type toddComms struct {
 
 // NewToDDComms will create a new instance of toddComms, and load the desired
 // CommsPackage-compatible comms package into it.
-func NewToDDComms(cfg config.Config) *toddComms {
+func NewToDDComms(cfg config.Config) (*toddComms, error) {
 
 	var tc toddComms
 
@@ -66,9 +68,9 @@ func NewToDDComms(cfg config.Config) *toddComms {
 		tc.CommsPackage = newRabbitMQComms(cfg)
 	default:
 		log.Error("Invalid comms plugin in config file")
-		os.Exit(1)
+		return nil, errors.New("Invalid comms plugin in config file")
 	}
 
-	return &tc
+	return &tc, nil
 
 }

@@ -74,8 +74,19 @@ func main() {
 	}()
 
 	// Start listening for agent advertisements
-	var tc = comms.NewToDDComms(cfg)
-	go tc.CommsPackage.ListenForAgent(assets)
+	tc, err := comms.NewToDDComms(cfg)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	go func() {
+		for {
+			err := tc.CommsPackage.ListenForAgent(assets)
+			if err != nil {
+				log.Fatalf("Error listening for ToDD Agents")
+			}
+		}
+	}()
 
 	// Kick off group calculation in background
 	go func() {

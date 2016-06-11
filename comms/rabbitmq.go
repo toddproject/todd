@@ -76,6 +76,7 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) error {
 	conn, err := connectRabbitMQ(rmq.queueUrl)
 	if err != nil {
 		log.Error("(AdvertiseAgent) Failed to connect to RabbitMQ")
+		log.Debug(err)
 		return err
 	}
 	defer conn.Close()
@@ -83,6 +84,7 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) error {
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Error("Failed to open a channel")
+		log.Debug(err)
 		return err
 	}
 
@@ -99,6 +101,7 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) error {
 	)
 	if err != nil {
 		log.Error("Failed to declare an exchange")
+		log.Debug(err)
 		return err
 	}
 
@@ -112,6 +115,7 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) error {
 	)
 	if err != nil {
 		log.Error("Failed to declare a queue")
+		log.Debug(err)
 		return err
 	}
 
@@ -124,6 +128,7 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) error {
 	)
 	if err != nil {
 		log.Error("Failed to bind exchange to queue")
+		log.Debug(err)
 		return err
 	}
 
@@ -131,6 +136,7 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) error {
 	json_data, err := json.Marshal(me)
 	if err != nil {
 		log.Error("Failed to marshal agent data from queue")
+		log.Debug(err)
 		return err
 	}
 
@@ -146,6 +152,7 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) error {
 		})
 	if err != nil {
 		log.Error("Failed to publish agent advertisement")
+		log.Debug(err)
 		return err
 	}
 
@@ -156,22 +163,23 @@ func (rmq rabbitMQComms) AdvertiseAgent(me defs.AgentAdvert) error {
 
 // ListenForAgent will listen on the message queue for new agent advertisements.
 // It is meant to be run as a goroutine
-func (rmq rabbitMQComms) ListenForAgent(assets map[string]map[string]string) {
+func (rmq rabbitMQComms) ListenForAgent(assets map[string]map[string]string) error {
 
 	// TODO(mierdin): does func param need to be a pointer?
 
 	conn, err := amqp.Dial(rmq.queueUrl)
 	if err != nil {
-		log.Error(err)
-		log.Error("Failed to connect to RabbitMQ")
-		os.Exit(1)
+		log.Error("(ListenForAgent) Failed to connect to RabbitMQ")
+		log.Debug(err)
+		return err
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Error("Failed to open a channel")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 	defer ch.Close()
 
@@ -185,7 +193,8 @@ func (rmq rabbitMQComms) ListenForAgent(assets map[string]map[string]string) {
 	)
 	if err != nil {
 		log.Error("Failed to declare a queue")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	msgs, err := ch.Consume(
@@ -199,7 +208,8 @@ func (rmq rabbitMQComms) ListenForAgent(assets map[string]map[string]string) {
 	)
 	if err != nil {
 		log.Error("Failed to register a consumer")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	forever := make(chan bool)
@@ -286,24 +296,27 @@ func (rmq rabbitMQComms) ListenForAgent(assets map[string]map[string]string) {
 
 	log.Infof(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
+
+	return nil
 }
 
 // SendTask will send a task object onto the specified queue ("queueName"). This could be an agent UUID, or a group name. Agents
 // that have been added to a group
-func (rmq rabbitMQComms) SendTask(queueName string, task tasks.Task) {
+func (rmq rabbitMQComms) SendTask(queueName string, task tasks.Task) error {
 
 	conn, err := amqp.Dial(rmq.queueUrl)
 	if err != nil {
-		log.Error(err)
-		log.Error("Failed to connect to RabbitMQ")
-		os.Exit(1)
+		log.Error("(ListenForAgent) Failed to connect to RabbitMQ")
+		log.Debug(err)
+		return err
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Error("Failed to open a channel")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 	defer ch.Close()
 
@@ -318,7 +331,8 @@ func (rmq rabbitMQComms) SendTask(queueName string, task tasks.Task) {
 	)
 	if err != nil {
 		log.Error("Failed to declare an exchange")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	_, err = ch.QueueDeclare(
@@ -331,7 +345,8 @@ func (rmq rabbitMQComms) SendTask(queueName string, task tasks.Task) {
 	)
 	if err != nil {
 		log.Error("Failed to declare a queue")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	err = ch.QueueBind(
@@ -343,13 +358,15 @@ func (rmq rabbitMQComms) SendTask(queueName string, task tasks.Task) {
 	)
 	if err != nil {
 		log.Error("Failed to bind exchange to queue")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	json_data, err := json.Marshal(task)
 	if err != nil {
 		log.Error("Failed to marshal object data")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	err = ch.Publish(
@@ -363,10 +380,13 @@ func (rmq rabbitMQComms) SendTask(queueName string, task tasks.Task) {
 		})
 	if err != nil {
 		log.Error("Failed to publish a task onto message queue")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	log.Debugf("Sent task to %s: %s", queueName, json_data)
+
+	return nil
 }
 
 // ListenForTasks is a method that recieves task notices from the server

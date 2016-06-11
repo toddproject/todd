@@ -83,7 +83,10 @@ func Start(cfg config.Config, trObj objects.TestRunObject, sourceOverrideMap map
 	}
 
 	// Start listening for responses from agents
-	var tc = comms.NewToDDComms(cfg)
+	tc, err := comms.NewToDDComms(cfg)
+	if err != nil {
+		os.Exit(1) //TODO(mierdin): remove
+	}
 	stopListeningForResponses := make(chan bool, 1)
 	go tc.CommsPackage.ListenForResponses(&stopListeningForResponses)
 
@@ -152,7 +155,11 @@ func Start(cfg config.Config, trObj objects.TestRunObject, sourceOverrideMap map
 		var itrTask tasks.InstallTestRunTask
 		itrTask.Type = "InstallTestRun" //TODO(mierdin): This is an extra step. Maybe a factory function for the task could help here?
 		itrTask.Tr = targetTr
-		var tc = comms.NewToDDComms(cfg)
+
+		tc, err := comms.NewToDDComms(cfg)
+		if err != nil {
+			os.Exit(1) //TODO(mierdin): remove
+		}
 
 		// Send testrun to each agent UUID in the targets group
 		for uuid, _ := range testAgentMap["targets"] {
@@ -207,7 +214,10 @@ readyloop:
 		break
 	}
 
-	var tc = comms.NewToDDComms(cfg)
+	tc, err := comms.NewToDDComms(cfg)
+	if err != nil {
+		os.Exit(1) //TODO(mierdin): remove
+	}
 
 	// If this is a group target type, we want to make sure that the targets are set up and reporting a status of "testing"
 	// before we spin up the source tests
