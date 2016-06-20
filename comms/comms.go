@@ -47,8 +47,8 @@ type CommsPackage interface {
 
 	ListenForGroupTasks(string, chan bool) error
 
-	ListenForResponses(*chan bool)
-	SendResponse(responses.Response)
+	ListenForResponses(*chan bool) error
+	SendResponse(responses.Response) error
 }
 
 // toddComms is a struct to hold anything that satisfies the CommsPackage interface

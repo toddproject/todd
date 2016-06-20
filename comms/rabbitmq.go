@@ -633,6 +633,7 @@ func (rmq rabbitMQComms) ListenForGroupTasks(groupName string, dereg chan bool) 
 	conn, err := connectRabbitMQ(rmq.queueUrl)
 	if err != nil {
 		log.Error("(AdvertiseAgent) Failed to connect to RabbitMQ")
+		log.Debug(err)
 		return err
 	}
 	defer conn.Close()
@@ -640,7 +641,8 @@ func (rmq rabbitMQComms) ListenForGroupTasks(groupName string, dereg chan bool) 
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Error("Failed to open a channel")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 	defer ch.Close()
 
@@ -654,7 +656,8 @@ func (rmq rabbitMQComms) ListenForGroupTasks(groupName string, dereg chan bool) 
 	)
 	if err != nil {
 		log.Error("Failed to declare a queue")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	msgs, err := ch.Consume(
@@ -668,7 +671,8 @@ func (rmq rabbitMQComms) ListenForGroupTasks(groupName string, dereg chan bool) 
 	)
 	if err != nil {
 		log.Error("Failed to register a consumer")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	log.Debug("Agent re-registering onto group queue - ", groupName)
@@ -702,22 +706,23 @@ func (rmq rabbitMQComms) ListenForGroupTasks(groupName string, dereg chan bool) 
 }
 
 // SendResponse will send a response object onto the statically-defined queue for receiving such messages.
-func (rmq rabbitMQComms) SendResponse(resp responses.Response) {
+func (rmq rabbitMQComms) SendResponse(resp responses.Response) error {
 
 	queueName := "agentresponses"
 
 	conn, err := amqp.Dial(rmq.queueUrl)
 	if err != nil {
-		log.Error(err)
 		log.Error("Failed to connect to RabbitMQ")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Error("Failed to open a channel")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 	defer ch.Close()
 
@@ -732,7 +737,8 @@ func (rmq rabbitMQComms) SendResponse(resp responses.Response) {
 	)
 	if err != nil {
 		log.Error("Failed to declare an exchange")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	_, err = ch.QueueDeclare(
@@ -745,7 +751,8 @@ func (rmq rabbitMQComms) SendResponse(resp responses.Response) {
 	)
 	if err != nil {
 		log.Error("Failed to declare a queue")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	err = ch.QueueBind(
@@ -757,13 +764,15 @@ func (rmq rabbitMQComms) SendResponse(resp responses.Response) {
 	)
 	if err != nil {
 		log.Error("Failed to bind exchange to queue")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	json_data, err := json.Marshal(resp)
 	if err != nil {
 		log.Error("Failed to marshal response data")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	err = ch.Publish(
@@ -777,29 +786,33 @@ func (rmq rabbitMQComms) SendResponse(resp responses.Response) {
 		})
 	if err != nil {
 		log.Error("Failed to publish a response onto message queue")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	log.Debugf("Sent response to %s: %s", queueName, json_data)
+
+	return nil
 }
 
 // ListenForResponses listens for responses from an agent
-func (rmq rabbitMQComms) ListenForResponses(stopListeningForResponses *chan bool) {
+func (rmq rabbitMQComms) ListenForResponses(stopListeningForResponses *chan bool) error {
 
 	queueName := "agentresponses"
 
 	conn, err := amqp.Dial(rmq.queueUrl)
 	if err != nil {
-		log.Error(err)
 		log.Error("Failed to connect to RabbitMQ")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Error("Failed to open a channel")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 	defer ch.Close()
 
@@ -813,7 +826,8 @@ func (rmq rabbitMQComms) ListenForResponses(stopListeningForResponses *chan bool
 	)
 	if err != nil {
 		log.Error("Failed to declare a queue")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	msgs, err := ch.Consume(
@@ -827,13 +841,15 @@ func (rmq rabbitMQComms) ListenForResponses(stopListeningForResponses *chan bool
 	)
 	if err != nil {
 		log.Error("Failed to register a consumer")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	tdb, err := db.NewToddDB(rmq.config) // TODO(vcabbage): Consider moving this into the rabbitMQComms struct
 	if err != nil {
 		log.Error("Failed to connect to DB")
-		os.Exit(1)
+		log.Debug(err)
+		return err
 	}
 
 	go func() {
@@ -889,4 +905,6 @@ func (rmq rabbitMQComms) ListenForResponses(stopListeningForResponses *chan bool
 
 	log.Infof(" [*] Waiting for messages. To exit press CTRL+C")
 	<-*stopListeningForResponses
+
+	return nil
 }
