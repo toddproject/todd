@@ -5,13 +5,15 @@ In ToDD, we use a simple abstraction for communicating between the ToDD server a
 
 .. image:: images/comms.png
 
-As shown in `#18 <https://github.com/Mierdin/todd/issues/18>`_, this paradigm wasn't very well documented until now. I created this page to let you know as an operator, while the "comms" abstraction exists within ToDD, the external entity - be it RabbitMQ, Apache Kafka, etc, needs to be provided for ToDD to work.
+As shown in `#18 <https://github.com/Mierdin/todd/issues/18>`_, this paradigm wasn't very well documented until now. ToDD still requires that some external entity like RabbitMQ is set up.
 
-If you have no experience with these, please refer to 
+If you have no experience with doing this, please refer to 
 `start-containers.sh <https://github.com/Mierdin/todd/blob/master/scripts/start-containers.sh#L44>`_ - this starts some docker containers running these services with reasonable defaults - suitable for getting started with ToDD.
 
 Comms
 -----
+
+The "comms" abstraction within ToDD integrates with RabbitMQ (and others TBD) to provide this communication.
 
 .. NOTE::
    The rest of this doc is primarily focused on developers looking to augment ToDD, either by adding a new comms plugin, or perhaps modifying an existing one.
