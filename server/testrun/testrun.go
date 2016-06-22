@@ -323,7 +323,11 @@ finishedloop:
 		}
 
 		var time_db = tsdb.NewToddTSDB(cfg)
-		time_db.TSDBPackage.WriteData(testUuid, trObj.Label, trObj.Spec.Source["name"], testDataMap)
+		err = time_db.TSDBPackage.WriteData(testUuid, trObj.Label, trObj.Spec.Source["name"], testDataMap)
+		if err != nil {
+			log.Error("TSDB ERROR - TESTRUN METRICS NOT PUBLISHED")
+		}
+
 	}
 
 	// Clean up our goroutines

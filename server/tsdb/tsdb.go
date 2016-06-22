@@ -19,7 +19,7 @@ import (
 
 // TSDBPackage represents all of the behavior that a ToDD TSDB plugin must support
 type TSDBPackage interface {
-	WriteData(string, string, string, map[string]map[string]map[string]string)
+	WriteData(string, string, string, map[string]map[string]map[string]string) error
 }
 
 // toddTSDB is a struct to hold anything that satisfies the databasePackage interface

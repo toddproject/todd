@@ -31,11 +31,19 @@ type influxDB struct {
 	config config.Config
 }
 
-func (ifdb influxDB) WriteData(testUuid, testRunName, groupName string, testData map[string]map[string]map[string]string) {
+// WriteData will write the resulting testrun data to influxdb as a batch of points - containing
+// important information like metrics and which agent reported them.
+func (ifdb influxDB) WriteData(testUuid, testRunName, groupName string, testData map[string]map[string]map[string]string) error {
+
 	// Make client
-	c, _ := influx.NewHTTPClient(influx.HTTPConfig{
+	c, err := influx.NewHTTPClient(influx.HTTPConfig{
 		Addr: fmt.Sprintf("http://%s:%s", ifdb.config.TSDB.Host, ifdb.config.TSDB.Port),
 	})
+	if err != nil {
+		log.Error("Error creating InfluxDB Client: ", err.Error())
+		return err
+	}
+	defer c.Close()
 
 	// Create a new point batch
 	bp, _ := influx.NewBatchPoints(influx.BatchPointsConfig{
@@ -43,8 +51,10 @@ func (ifdb influxDB) WriteData(testUuid, testRunName, groupName string, testData
 		Precision: "s",
 	})
 
+	// Need to publish data from all of the agents that took part in this test
 	for agentUuid, agentData := range testData {
 
+		// Also need to differentiate between the various target that these agents tested against
 		for targetAddress, metrics := range agentData {
 
 			// Create a point and add to batch
@@ -69,7 +79,13 @@ func (ifdb influxDB) WriteData(testUuid, testRunName, groupName string, testData
 	}
 
 	// Write the batch
-	c.Write(bp)
+	err = c.Write(bp)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
 
 	log.Infof("Wrote test data for %s to influxdb", testUuid)
+
+	return nil
 }
