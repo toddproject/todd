@@ -20,21 +20,21 @@ import (
 )
 
 // Groups will query ToDD for a map containing current agent-to-group mappings
-func (capi ClientApi) Groups(conf map[string]string) {
+func (capi ClientApi) Groups(conf map[string]string) error {
 
 	url := fmt.Sprintf("http://%s:%s/v1/groups", conf["host"], conf["port"])
 
 	// Build the request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Send the request via a client
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Defer the closing of the body
@@ -42,14 +42,14 @@ func (capi ClientApi) Groups(conf map[string]string) {
 	// Read the content into a byte array
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Marshal API data into map
 	var groupmap map[string]string
 	err = json.Unmarshal(body, &groupmap)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	w := new(tabwriter.Writer)
@@ -68,5 +68,7 @@ func (capi ClientApi) Groups(conf map[string]string) {
 	}
 	fmt.Fprintln(w)
 	w.Flush()
+
+	return nil
 
 }

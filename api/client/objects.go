@@ -9,6 +9,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,12 +21,12 @@ import (
 
 // Objects will query ToDD for all objects, with the type requested in the sub-arguments, and then display a list of those
 // objects to the user.
-func (capi ClientApi) Objects(conf map[string]string, objType string) {
+func (capi ClientApi) Objects(conf map[string]string, objType string) error {
 
 	// If no subarg was provided, instruct the user to provide the object type
 	if objType == "" {
 		fmt.Println("Please provide the object type")
-		os.Exit(1)
+		return errors.New("Object type not provided")
 	}
 
 	url := fmt.Sprintf("http://%s:%s/v1/object/%s", conf["host"], conf["port"], objType)
@@ -33,14 +34,14 @@ func (capi ClientApi) Objects(conf map[string]string, objType string) {
 	// Build the request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Send the request via a client
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Defer the closing of the body
@@ -48,7 +49,7 @@ func (capi ClientApi) Objects(conf map[string]string, objType string) {
 	// Read the content into a byte array
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	parsed_objects := objects.ParseToddObjects(body)
@@ -71,5 +72,7 @@ func (capi ClientApi) Objects(conf map[string]string, objType string) {
 	}
 	fmt.Fprintln(w)
 	w.Flush()
+
+	return nil
 
 }
