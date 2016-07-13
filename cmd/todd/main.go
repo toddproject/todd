@@ -170,7 +170,7 @@ func main() {
 			},
 			Usage: "Execute an already uploaded testrun object",
 			Action: func(c *cli.Context) {
-				clientapi.Run(
+				err := clientapi.Run(
 					map[string]string{
 						"host":        host,
 						"port":        port,
@@ -182,6 +182,11 @@ func main() {
 					c.Bool("j"),
 					c.Bool("y"),
 				)
+				if err != nil {
+					fmt.Println("ERROR - Problem running testrun")
+					os.Exit(1)
+				}
+
 			},
 		},
 	}

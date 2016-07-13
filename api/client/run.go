@@ -22,7 +22,7 @@ import (
 )
 
 // Run is responsible for activating an existing testrun object
-func (capi ClientApi) Run(conf map[string]string, testrunName string, displayReport, skipConfirm bool) {
+func (capi ClientApi) Run(conf map[string]string, testrunName string, displayReport, skipConfirm bool) error {
 
 	sourceGroup := conf["sourceGroup"]
 	sourceApp := conf["sourceApp"]
@@ -30,8 +30,9 @@ func (capi ClientApi) Run(conf map[string]string, testrunName string, displayRep
 
 	// If no subarg was provided, do nothing
 	if testrunName == "" {
-		fmt.Println("Please provide testrun object name to run.")
-		os.Exit(1)
+		errorMsg := "Please provide testrun object name to run."
+		fmt.Println(errorMsg)
+		return errors.New(errorMsg)
 	}
 
 	if !skipConfirm {
@@ -39,12 +40,11 @@ func (capi ClientApi) Run(conf map[string]string, testrunName string, displayRep
 		var userResponse string
 		_, err := fmt.Scanln(&userResponse)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		if userResponse != "y" {
 			fmt.Println("Aborted.")
-			os.Exit(0)
+			return nil
 		}
 	}
 
@@ -65,44 +65,45 @@ func (capi ClientApi) Run(conf map[string]string, testrunName string, displayRep
 	var buf bytes.Buffer
 	err := json.NewEncoder(&buf).Encode(testRunInfo)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	// Construct API request, and send POST to server for this object
 	url := fmt.Sprintf("http://%s:%s/v1/testrun/run", conf["host"], conf["port"])
 
 	req, err := http.NewRequest("POST", url, &buf)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer resp.Body.Close()
 
-	// Print error if not 200 OK
-	if resp.StatusCode > 299 {
-		fmt.Println("response Status:", resp.Status)
-		fmt.Println("response Headers:", resp.Header)
-		os.Exit(1)
+	// Print a regular OK message if object was written successfully - else print the HTTP status code
+	if resp.Status != "200 OK" {
+		fmt.Println(resp.Status)
+		return errors.New(resp.Status)
 	}
 
 	serverResponse, _ := ioutil.ReadAll(resp.Body)
 
+	errorMsg := ""
+
 	switch string(serverResponse) {
 	case "notfound":
-		fmt.Println("ERROR - Specified testrun object not found.")
-		os.Exit(1)
-
+		errorMsg = "ERROR - Specified testrun object not found."
 	case "invalidtopology":
-		fmt.Println("ERROR - Not enough agents are in the groups specified by the testrun")
-		os.Exit(1)
-
+		errorMsg = "ERROR - Not enough agents are in the groups specified by the testrun"
 	case "failure":
-		fmt.Println("ERROR - some kind of error was encountered on the server. Test was not run.")
-		os.Exit(1)
+		errorMsg = "ERROR - some kind of error was encountered on the server. Test was not run."
+	}
+
+	if errorMsg != "" {
+		fmt.Println(errorMsg)
+		return errors.New(errorMsg)
 	}
 
 	fmt.Println("")
@@ -125,8 +126,9 @@ func (capi ClientApi) Run(conf map[string]string, testrunName string, displayRep
 	for err != nil {
 		select {
 		case <-timeout:
-			fmt.Println("Failed to retrieve test data after 45 seconds. Something must be wrong - quitting.")
-			os.Exit(1)
+			errorMsg := "Failed to retrieve test data after 45 seconds. Something must be wrong - quitting."
+			fmt.Println(errorMsg)
+			return errors.New(errorMsg)
 		default:
 			time.Sleep(1 * time.Second)
 			data, err = getRunResult(conf, testUUID)
@@ -146,7 +148,7 @@ func (capi ClientApi) Run(conf map[string]string, testrunName string, displayRep
 		fmt.Println()
 	}
 
-	os.Exit(0)
+	return nil
 }
 
 var errNoTestResult = errors.New("No test result")
