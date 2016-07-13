@@ -111,12 +111,16 @@ func main() {
 			Name:  "groups",
 			Usage: "Show current agent-to-group mappings",
 			Action: func(c *cli.Context) {
-				clientapi.Groups(
+				err := clientapi.Groups(
 					map[string]string{
 						"host": host,
 						"port": port,
 					},
 				)
+				if err != nil {
+					fmt.Println("ERROR - Unable to obtain current group mapping")
+					os.Exit(1)
+				}
 			},
 		},
 
@@ -125,13 +129,17 @@ func main() {
 			Name:  "objects",
 			Usage: "Show information about installed group objects",
 			Action: func(c *cli.Context) {
-				clientapi.Objects(
+				err := clientapi.Objects(
 					map[string]string{
 						"host": host,
 						"port": port,
 					},
 					c.Args().Get(0),
 				)
+				if err != nil {
+					fmt.Println("ERROR - Unable to retrieve object")
+					os.Exit(1)
+				}
 			},
 		},
 
