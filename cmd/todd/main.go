@@ -62,7 +62,10 @@ func main() {
 					fmt.Println(err)
 					os.Exit(1)
 				}
-				clientapi.DisplayAgents(agents, !(c.Args().Get(0) == ""))
+				err = clientapi.DisplayAgents(agents, !(c.Args().Get(0) == ""))
+				if err != nil {
+					fmt.Println("Problem displaying agents (client-side)")
+				}
 			},
 		},
 
@@ -80,7 +83,7 @@ func main() {
 					c.Args().Get(0),
 				)
 				if err != nil {
-					fmt.Println("Unable to create object on ToDD server.")
+					fmt.Println(err)
 					os.Exit(1)
 				}
 			},
@@ -100,7 +103,8 @@ func main() {
 					c.Args().Get(1),
 				)
 				if err != nil {
-					fmt.Println("ERROR - Are you sure you provided the right object type and/or label?")
+					fmt.Printf("ERROR: %s\n", err)
+					fmt.Println("(Are you sure you provided the right object type and/or label?)")
 					os.Exit(1)
 				}
 			},
@@ -118,7 +122,7 @@ func main() {
 					},
 				)
 				if err != nil {
-					fmt.Println("ERROR - Unable to obtain current group mapping")
+					fmt.Println(err)
 					os.Exit(1)
 				}
 			},
@@ -137,7 +141,7 @@ func main() {
 					c.Args().Get(0),
 				)
 				if err != nil {
-					fmt.Println("ERROR - Unable to retrieve object")
+					fmt.Println(err)
 					os.Exit(1)
 				}
 			},
@@ -183,10 +187,9 @@ func main() {
 					c.Bool("y"),
 				)
 				if err != nil {
-					fmt.Println("ERROR - Problem running testrun")
+					fmt.Println(err)
 					os.Exit(1)
 				}
-
 			},
 		},
 	}

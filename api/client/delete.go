@@ -21,8 +21,7 @@ func (capi ClientApi) Delete(conf map[string]string, objType, objLabel string) e
 
 	// If insufficient subargs were provided, error out
 	if objType == "" || objLabel == "" {
-		fmt.Println("Error, need to provide type and label (Ex. 'todd delete group datacenter')")
-		return errors.New("invalid syntax")
+		return errors.New("Error, need to provide type and label (Ex. 'todd delete group datacenter')")
 	}
 
 	// anonymous struct to hold our delete info
@@ -62,7 +61,6 @@ func (capi ClientApi) Delete(conf map[string]string, objType, objLabel string) e
 	if resp.Status == "200 OK" {
 		fmt.Println("[OK]")
 	} else {
-		fmt.Println(resp.Status)
 		return errors.New(resp.Status)
 	}
 

@@ -25,8 +25,7 @@ func (capi ClientApi) Objects(conf map[string]string, objType string) error {
 
 	// If no subarg was provided, instruct the user to provide the object type
 	if objType == "" {
-		fmt.Println("Please provide the object type")
-		return errors.New("Object type not provided")
+		return errors.New("Please provide the object type")
 	}
 
 	url := fmt.Sprintf("http://%s:%s/v1/object/%s", conf["host"], conf["port"], objType)

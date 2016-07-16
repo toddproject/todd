@@ -30,9 +30,7 @@ func (capi ClientApi) Run(conf map[string]string, testrunName string, displayRep
 
 	// If no subarg was provided, do nothing
 	if testrunName == "" {
-		errorMsg := "Please provide testrun object name to run."
-		fmt.Println(errorMsg)
-		return errors.New(errorMsg)
+		return errors.New("Please provide testrun object name to run.")
 	}
 
 	if !skipConfirm {
@@ -84,40 +82,31 @@ func (capi ClientApi) Run(conf map[string]string, testrunName string, displayRep
 
 	// Print a regular OK message if object was written successfully - else print the HTTP status code
 	if resp.Status != "200 OK" {
-		fmt.Println(resp.Status)
 		return errors.New(resp.Status)
 	}
 
 	serverResponse, _ := ioutil.ReadAll(resp.Body)
 
-	errorMsg := ""
-
 	switch string(serverResponse) {
 	case "notfound":
-		errorMsg = "ERROR - Specified testrun object not found."
+		return errors.New("ERROR - Specified testrun object not found.")
 	case "invalidtopology":
-		errorMsg = "ERROR - Not enough agents are in the groups specified by the testrun"
+		return errors.New("ERROR - Not enough agents are in the groups specified by the testrun")
 	case "failure":
-		errorMsg = "ERROR - some kind of error was encountered on the server. Test was not run."
+		return errors.New("ERROR - some kind of error was encountered on the server. Test was not run.")
 	}
-
-	if errorMsg != "" {
-		fmt.Println(errorMsg)
-		return errors.New(errorMsg)
-	}
-
-	fmt.Println("")
 
 	testUUID := string(serverResponse)
 
-	fmt.Print("RUNNING TEST: ", testUUID)
+	fmt.Print("\nRUNNING TEST: ", testUUID)
 	fmt.Print("\n\n")
 
 	fmt.Println("(Please be patient while the test finishes...)")
 
 	err = listenForTestStatus(conf)
 	if err != nil {
-		fmt.Println(err, "Will now watch the testrun metrics API for 45 seconds to see if we get a result that way. Please wait...")
+		fmt.Printf("Problem subscribing to testrun updates stream: %s\n", err)
+		fmt.Println("Will now watch the testrun metrics API for 45 seconds to see if we get a result that way. Please wait...")
 	}
 
 	// Poll for results
@@ -126,9 +115,7 @@ func (capi ClientApi) Run(conf map[string]string, testrunName string, displayRep
 	for err != nil {
 		select {
 		case <-timeout:
-			errorMsg := "Failed to retrieve test data after 45 seconds. Something must be wrong - quitting."
-			fmt.Println(errorMsg)
-			return errors.New(errorMsg)
+			return errors.New("Failed to retrieve test data after 45 seconds. Something must be wrong - quitting.")
 		default:
 			time.Sleep(1 * time.Second)
 			data, err = getRunResult(conf, testUUID)
@@ -179,10 +166,12 @@ func getRunResult(conf map[string]string, testUUID string) ([]byte, error) {
 func listenForTestStatus(conf map[string]string) error {
 	retries := 0
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:8081", conf["host"]))
+
+	// If the call to net.Dial produces an error, this loop will execute the call again
+	// until "retries" reaches it's configured limit
 	for err != nil {
 		if retries > 5 {
-			fmt.Println("Failed to subscribe to test event stream after several retries.")
-			return errors.New("session failed")
+			return errors.New("Failed to subscribe to test event stream after several retries.")
 		}
 
 		retries++
@@ -201,7 +190,7 @@ func listenForTestStatus(conf map[string]string) error {
 		// If an error is raised, it's probably because the server killed the connection
 		if err != nil {
 			// TODO(mierdin): This doesn't really tell us if the connection died because of an error or not
-			return errors.New("session disconnected")
+			return errors.New("Disconnected from testrun status stream")
 		}
 
 		var statuses map[string]string
@@ -228,8 +217,7 @@ func listenForTestStatus(conf map[string]string) error {
 			case "finished":
 				finished++
 			default:
-				fmt.Println("Invalid status recieved.")
-				os.Exit(1)
+				return errors.New("Invalid status received.")
 			}
 		}
 

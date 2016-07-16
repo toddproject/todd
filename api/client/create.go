@@ -29,7 +29,6 @@ func (capi ClientApi) Create(conf map[string]string, yamlFileName string) error 
 	// Pull YAML from either stdin or from the filename if stdin is empty
 	yamlDef, err := getYAMLDef(yamlFileName)
 	if err != nil {
-		fmt.Println("Unable to read object definition")
 		return err
 	}
 
@@ -37,8 +36,7 @@ func (capi ClientApi) Create(conf map[string]string, yamlFileName string) error 
 	var baseobj objects.BaseObject
 	err = yaml.Unmarshal(yamlDef, &baseobj)
 	if err != nil {
-		fmt.Println("YAML file not in correct format")
-		return err
+		return errors.New("YAML file not in correct format")
 	}
 
 	// finalobj represents the object being created, regardless of type.
@@ -50,16 +48,14 @@ func (capi ClientApi) Create(conf map[string]string, yamlFileName string) error 
 		var group_obj objects.GroupObject
 		err = yaml.Unmarshal(yamlDef, &group_obj)
 		if err != nil {
-			fmt.Println("Group YAML object not in correct format")
-			return err
+			return errors.New("Group YAML object not in correct format")
 		}
 		finalobj = group_obj
 	case "testrun":
 		var testrun_obj objects.TestRunObject
 		err = yaml.Unmarshal(yamlDef, &testrun_obj)
 		if err != nil {
-			fmt.Println("Testrun YAML object not in correct format")
-			return err
+			return errors.New("Testrun YAML object not in correct format")
 		}
 
 		if testrun_obj.Spec.TargetType == "group" {
@@ -77,15 +73,13 @@ func (capi ClientApi) Create(conf map[string]string, yamlFileName string) error 
 		finalobj = testrun_obj
 
 	default:
-		fmt.Println("Invalid object type provided")
 		return errors.New("Invalid object type provided")
 	}
 
 	// Marshal the final object into JSON
 	json_str, err := json.Marshal(finalobj)
 	if err != nil {
-		fmt.Println("Problem marshalling the final object into JSON")
-		return err
+		return errors.New("Problem marshalling the final object into JSON")
 	}
 
 	// Construct API request, and send POST to server for this object
@@ -110,7 +104,6 @@ func (capi ClientApi) Create(conf map[string]string, yamlFileName string) error 
 	if resp.Status == "200 OK" {
 		fmt.Println("[OK]")
 	} else {
-		fmt.Println(resp.Status)
 		return errors.New(resp.Status)
 	}
 
@@ -126,8 +119,7 @@ func getYAMLDef(yamlFileName string) ([]byte, error) {
 
 	// Quit if there's nothing on stdin, and there's no arg either
 	if yamlFileName == "" {
-		fmt.Println("Please provide definition file")
-		return nil, errors.New("Object definition file not provided")
+		return nil, errors.New("Object definition file not provided - please provide via filename or stdin")
 	}
 
 	// Read YAML file
