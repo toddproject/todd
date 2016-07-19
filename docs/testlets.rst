@@ -18,7 +18,7 @@ When you want to run a certain testlet, you refer to it by name. There are a num
 * bandwidth
 * ping
 
-You can, of course, build your own testlet (provided it follows the standard defined on this page) and refer to it by it's filename.
+If you don't want to use any of the built-in testlets, you can, of course, build your own testlet (provided it follows the standard defined on this page) and refer to it by it's filename.
 
 Check Mode
 ----------
