@@ -20,6 +20,7 @@ import (
 
 	"github.com/Mierdin/todd/agent/cache"
 	"github.com/Mierdin/todd/agent/defs"
+	"github.com/Mierdin/todd/agent/testing/testlets"
 	"github.com/Mierdin/todd/config"
 )
 
@@ -42,35 +43,48 @@ func (itt InstallTestRunTask) Run() error {
 		return errors.New("Testlet parameter for this testrun is null")
 	}
 
-	// Generate path to testlet and make sure it exists.
-	testlet_path := fmt.Sprintf("%s/assets/testlets/%s", itt.Config.LocalResources.OptDir, itt.Tr.Testlet)
-	if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
-		log.Errorf("Testlet %s does not exist on this agent", itt.Tr.Testlet)
-		return errors.New("Error installing testrun - testlet doesn't exist on this agent.")
-	}
+	// Determine if this is a valid native testlet
+	_, err := testlets.NewTestlet(itt.Tr.Testlet)
 
-	// Run the testlet in check mode to verify that everything is okay to run this test
-	log.Debug("Running testlet in check mode: ", testlet_path)
-	cmd := exec.Command(testlet_path, "check")
+	// Not a native testlet - attempt to run check mode on testlet in filesystem
+	if err != nil {
 
-	// Stdout buffer
-	cmdOutput := &bytes.Buffer{}
-	// Attach buffer to command
-	cmd.Stdout = cmdOutput
-	// Execute collector
-	cmd.Run()
+		// Generate path to testlet and make sure it exists.
+		testlet_path := fmt.Sprintf("%s/assets/testlets/%s", itt.Config.LocalResources.OptDir, itt.Tr.Testlet)
+		if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
+			log.Errorf("Testlet %s does not exist on this agent", itt.Tr.Testlet)
+			return errors.New("Error installing testrun - testlet doesn't exist on this agent.")
+		}
 
-	// This is probably the best cross-platform way to see if check mode passed.
-	if strings.Contains(string(cmdOutput.Bytes()), "Check mode PASSED") {
-		log.Debugf("Check mode for %s passed", testlet_path)
+		// Run the testlet in check mode to verify that everything is okay to run this test
+		log.Debug("Running testlet in check mode: ", testlet_path)
+		cmd := exec.Command(testlet_path, "check")
+
+		// Stdout buffer
+		cmdOutput := &bytes.Buffer{}
+		// Attach buffer to command
+		cmd.Stdout = cmdOutput
+		// Execute collector
+		cmd.Run()
+
+		// This is probably the best cross-platform way to see if check mode passed.
+		if strings.Contains(string(cmdOutput.Bytes()), "Check mode PASSED") {
+			log.Debugf("Check mode for %s passed", testlet_path)
+		} else {
+			log.Error("Testlet returned an error during check mode: ", string(cmdOutput.Bytes()))
+			return errors.New("Testlet returned an error during check mode")
+		}
+
 	} else {
-		log.Error("Testlet returned an error during check mode: ", string(cmdOutput.Bytes()))
-		return errors.New("Testlet returned an error during check mode")
+
+		// Nothing to do, as we're using a native testlet
+		log.Infof("%s is a native testlet - installing testrun.", itt.Tr.Testlet)
+
 	}
 
 	// Insert testrun into agent cache
 	var ac = cache.NewAgentCache(itt.Config)
-	err := ac.InsertTestRun(itt.Tr)
+	err = ac.InsertTestRun(itt.Tr)
 	if err != nil {
 		log.Error(err)
 		return errors.New("Problem installing test run into agent cache")
