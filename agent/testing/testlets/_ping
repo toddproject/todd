@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# Copyright 2016 Matt Oswalt. Use or modification of this
+# source code is governed by the license provided here:
+# https://github.com/Mierdin/todd/blob/master/LICENSE
+
+check() {
+    echo "Running in check mode"
+    command -v ping >/dev/null 2>&1 || { echo >&2 "Ping is not installed. Exiting."; exit 1; }
+    echo "Check mode PASSED"
+    exit 0
+}
+
+if [[ $1 == "check" ]];
+  then
+    check
+fi
+
+# The first argument after the testlet name will ALWAYS be the target. So, $1 is always the target, and all arguments from $2 and up should be passed into the app command
+app_args="$@"
+app_args=${app_args#$0 }
+app_args=${app_args#$1 }
+
+app_run_command="ping $app_args $1"
+
+output=$($app_run_command)
+
+packet_loss=$(echo $output | tr '\n' ' ' | sed -n 's/.* \(.*\)% packet loss.*/\1/p')
+avg_latency=$(echo $output | tr '\n' ' ' | sed -n 's/.*dev = .*\/\(.*\)\/.*\/.*/\1/p')
+
+teslet_data='{"packet_loss_percentage":"'$packet_loss'", "avg_latency_ms":"'$avg_latency'"}'
+echo $teslet_data
