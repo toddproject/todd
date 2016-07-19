@@ -12,6 +12,20 @@ There are a number of testlets built-in to the ToDD agent and are usable simply 
 
 These have their own separate repositories and are distributed alongside ToDD proper. They are written in Go for a number of reasons. First, it makes it easy for the testlets to honor the testlet format by leveraging some common code in the ToDD repository. However, the testlets are still their own binary. In addition, it allows ToDD to execute tests consistently across platforms (The old model of using bash scripts meant the tests had to be run on a certain platform for which that testlet knew how to parse the output)
 
+If you don't want to use any of the built-in testlets, you can, of course, build your own testlet (provided it follows the standard defined on this page) and refer to it by it's filename.
+
+Check Mode
+----------
+Each testlet must support a "check mode". This is a way of running a testlet that allows the ToDD agent to know whether or not a test can be performed, without actually running the test.
+
+For instance, when the ToDD agent runs the "ping" testlet in check mode, it would invoke it like this:
+
+.. code-block:: text
+
+    ./testletname check
+
+That said, the ToDD Server will distribute testrun instructions to the agents in two phases:
+
 However, please see "Custom Testlets", and you'll find it's quite easy to build your own testlets and run them with ToDD. This extensibility was a core design principle of ToDD since the beginning of the project.
 
 
