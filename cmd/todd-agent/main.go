@@ -14,6 +14,8 @@ import (
 	"os"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
+
 	"github.com/Mierdin/todd/agent/cache"
 	"github.com/Mierdin/todd/agent/defs"
 	"github.com/Mierdin/todd/agent/facts"
@@ -21,7 +23,9 @@ import (
 	"github.com/Mierdin/todd/comms"
 	"github.com/Mierdin/todd/config"
 	"github.com/Mierdin/todd/hostresources"
-	log "github.com/Sirupsen/logrus"
+
+	// Testlet imports (importing these packages registers the testlets)
+	_ "github.com/Mierdin/todd/agent/testing/testlets/ping"
 )
 
 // Command-line Arguments
