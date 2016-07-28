@@ -27,8 +27,16 @@ type Testlet interface {
 	Run(string, []string) (map[string]string, error)
 
 	Kill() error
+}
 
-	Test() string //TODO(mierdin): Remove me
+// IsNativeTestlet polls the list of registered native testlets, and returns
+// true if the referenced name exists
+func IsNativeTestlet(name string) bool {
+	if _, ok := testlets[name]; ok {
+		return true
+	} else {
+		return false
+	}
 }
 
 //NewTestlet produces a new testlet based on the "name" param
