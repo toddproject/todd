@@ -13,24 +13,29 @@ package toddping
 // is being implemented so they can be broken out into their own repos.
 
 import (
+	"time"
+
 	"github.com/Mierdin/todd/agent/testing/testlets"
 )
 
 type PingTestlet struct{}
 
 func init() {
+
+	// This is important - register the name of this testlet
+	// (the name the user will use in a testrun definition)
 	testlets.Register("ping", &PingTestlet{})
 }
 
-// TODO(mierdin): Maybe consider running these asyc by default? Basically
-// the "Run" function kicks back a channel of type map[string]string so when
-// it's populated, it contains the metrics and you know it can stop
-
 func (p PingTestlet) Run(target string, args []string) (map[string]string, error) {
 
-	// TODO(mierdin): Implement ping test here
+	// TODO(mierdin): Implement ping test here - this is just a mock
+	time.Sleep(3000 * time.Millisecond)
+	return map[string]string{
+		"avg_latency_ms":         "25.144",
+		"packet_loss_percentage": "0",
+	}, nil
 
-	return map[string]string{}, nil
 }
 
 func (p PingTestlet) Kill() error {
@@ -39,8 +44,4 @@ func (p PingTestlet) Kill() error {
 	// async)
 
 	return nil
-}
-
-func (p PingTestlet) Test() string {
-	return "trolololol"
 }

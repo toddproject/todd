@@ -69,21 +69,38 @@ func (ett ExecuteTestRunTask) Run() error {
 	// Specify size of wait group
 	wg.Add(len(tr.Targets))
 
-	// Determine if this is a native testlet
-	nativeTestlet, err := testlets.NewTestlet(tr.Testlet)
-	native := (err == nil)
-
 	// Execute testlets against all targets asynchronously
 	for i := range tr.Targets {
 
 		thisTarget := tr.Targets[i]
 
-		if native {
+		if testlets.IsNativeTestlet(tr.Testlet) {
 			go func() {
 
-				// TODO(mierdin): Just calling a temporary method to ensure we can get to the native testlet.
-				// (it works!)
-				log.Error(nativeTestlet.Test())
+				// TODO(mierdin): Something worried me here (can't remember what) regarding
+				// if only some agents were running native testlets, does this wait group methodology work?
+				// Sorry it's not clear, I have had a bit too much wine.
+				defer wg.Done()
+
+				nativeTestlet, err := testlets.NewTestlet(tr.Testlet)
+				if err != nil {
+					//TODO(mierdin) do something
+				}
+
+				metrics, err := nativeTestlet.Run("8.8.8.8", []string{"-c 10", "-s"})
+				if err != nil {
+					//TODO(mierdin) do something
+				}
+
+				// The metrics infrastructure requires that we collect metrics as a JSON string
+				// (which is a result of building non-native testlets in early versions of ToDD)
+				// So let's convert, and add to gatheredData
+				metrics_json, err := json.Marshal(metrics)
+				if err != nil {
+					//TODO(mierdin) do something
+				}
+				gatheredData[thisTarget] = string(metrics_json)
+
 			}()
 		} else {
 			// Generate path to testlet and make sure it exists.
