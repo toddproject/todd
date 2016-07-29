@@ -87,9 +87,11 @@ func (ett ExecuteTestRunTask) Run() error {
 					//TODO(mierdin) do something
 				}
 
-				metrics, err := nativeTestlet.Run("8.8.8.8", []string{"-c 10", "-s"})
+				metrics, err := nativeTestlet.Run("8.8.8.8", []string{"-c 10", "-s"}, ett.TimeLimit)
+				//log.Error(nativeTestlet.RunFunction)
 				if err != nil {
-					//TODO(mierdin) do something
+					log.Errorf("Testlet <TESTLET> completed with error '%s'", err)
+					gatheredData[thisTarget] = "error"
 				}
 
 				// The metrics infrastructure requires that we collect metrics as a JSON string
@@ -125,6 +127,7 @@ func (ett ExecuteTestRunTask) Run() error {
 				// Execute collector
 				cmd.Start()
 
+				// TODO(mierdin): Does this need to be a buffered channel?
 				done := make(chan error, 1)
 				go func() {
 					done <- cmd.Wait()
