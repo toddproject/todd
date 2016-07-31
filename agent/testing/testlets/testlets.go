@@ -14,7 +14,8 @@ import (
 var (
 	testletsMu sync.RWMutex
 	testlets   = make(map[string]Testlet)
-	done       = make(chan error)
+	done       = make(chan error) // Used from within the goroutine to inform the infrastructure it has finished
+	kill       = make(chan bool)  // Used from outside the goroutine to inform the goroutine to stop
 )
 
 // Testlet defines what a testlet should look like if built in native
@@ -43,14 +44,14 @@ type Testlet interface {
 	// The developer of a native testlet just needs to implement the testlet logic here,
 	// without worrying about things like managing goroutines or channels. That's all
 	// managed by the "Run" or "Kill" functions
-	RunTestlet(string, []string) (map[string]string, error)
+	RunTestlet(string, []string, chan bool) (map[string]string, error)
 	// TODO(mierdin): is this really the best name for it? Maybe something that's less confusing, less like "Run"
 
 	// All testlets must be able to stop operation when sent a Kill command.
 	Kill() error
 }
 
-type rtfunc func(target string, args []string) (map[string]string, error)
+type rtfunc func(target string, args []string, kill chan bool) (map[string]string, error)
 
 type BaseTestlet struct {
 
@@ -66,11 +67,12 @@ func (b BaseTestlet) Run(target string, args []string, timeLimit int) (map[strin
 
 	// TODO(mierdin): ensure channel is nil
 	// done = make(chan error)
+	// kill = make(chan bool)
 
 	// TODO(mierdin): Based on experimentation, this will keep running even if this function returns.
 	// Need to be sure about how this ends. Also might want to evaluate the same for the existing non-native model, likely has the same issue
 	go func() {
-		theseMetrics, err := b.RunFunction(target, args)
+		theseMetrics, err := b.RunFunction(target, args, kill)
 		metrics = theseMetrics //TODO(mierdin): Gross.
 		done <- err
 	}()
