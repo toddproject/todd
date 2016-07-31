@@ -13,9 +13,10 @@ package toddping
 // is being implemented so they can be broken out into their own repos.
 
 import (
+	"fmt"
 	"time"
 
-	// log "github.com/Sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/Mierdin/todd/agent/testing/testlets"
 )
@@ -40,13 +41,57 @@ func init() {
 
 // RunTestlet implements the core logic of the testlet. Don't worry about running asynchronously,
 // that's handled by the infrastructure.
-func (p PingTestlet) RunTestlet(target string, args []string) (map[string]string, error) {
+func (p PingTestlet) RunTestlet(target string, args []string, kill chan (bool)) (map[string]string, error) {
 
-	// TODO(mierdin): Implement ping test here - this is just a mock
-	time.Sleep(3000 * time.Millisecond)
+	// Get number of pings
+	count := 3 //TODO(mierdin): need to parse from 'args', or if omitted, use a default value
+
+	log.Error(args)
+
+	var latencies []float32
+	var replies int
+
+	// Execute ping once per count
+	i := 0
+	for i < count {
+		select {
+		case <-kill:
+			// Terminating early; return empty metrics
+			return map[string]string{}, nil
+		default:
+
+			//log.Debugf("Executing ping #%d", i)
+
+			// Mocked ping logic
+			latency, replyReceived := pingTemp(count)
+
+			latencies = append(latencies, latency)
+
+			if replyReceived {
+				replies += 1
+			}
+
+			i += 1
+			time.Sleep(1000 * time.Millisecond)
+
+		}
+	}
+
+	// Calculate metrics
+	var latencyTotal float32 = 0
+	for _, value := range latencies {
+		latencyTotal += value
+	}
+	avg_latency_ms := latencyTotal / float32(len(latencies))
+	packet_loss := (float32(count) - float32(replies)) / float32(count)
+
 	return map[string]string{
-		"avg_latency_ms":         "25.144",
-		"packet_loss_percentage": "0",
+		"avg_latency_ms": fmt.Sprintf("%.2f", avg_latency_ms),
+		"packet_loss":    fmt.Sprintf("%.2f", packet_loss),
 	}, nil
 
+}
+
+func pingTemp(count int) (float32, bool) {
+	return float32(count) * 4.234, true
 }
