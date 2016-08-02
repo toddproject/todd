@@ -11,6 +11,7 @@ build:
 	docker build -t mierdin/todd -f Dockerfile .
 
 compile:
+	./scripts/buildtestlets.sh
 	go install ./cmd/...
 
 install: configureenv
@@ -27,7 +28,7 @@ update_deps:
 
 update_assets:
 	go get -u github.com/jteeuwen/go-bindata/...
-	go-bindata -o assets/assets_unpack.go -pkg="assets" -prefix="agent" agent/testing/testlets/... agent/facts/collectors/...
+	go-bindata -o assets/assets_unpack.go -pkg="assets" -prefix="agent" agent/testing/bashtestlets/... agent/facts/collectors/...
 
 start: compile
 
