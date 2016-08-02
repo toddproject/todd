@@ -32,7 +32,7 @@ func serveAssets(cfg config.Config) map[string]map[string]string {
 	// Initialize asset map
 	assetMap := map[string]map[string]string{
 		"factcollectors": hashAssets("facts/collectors"),
-		"testlets":       hashAssets("testing/testlets"),
+		"testlets":       hashAssets("testing/bashtestlets"),
 	}
 
 	fmt.Println(assetMap)

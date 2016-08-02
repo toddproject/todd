@@ -25,7 +25,7 @@ import (
 	"github.com/Mierdin/todd/hostresources"
 
 	// Testlet imports (importing these packages registers the testlets)
-	_ "github.com/Mierdin/todd/agent/testing/testlets/ping"
+	_ "github.com/Mierdin/todd/agent/testing/downloaded_testlets"
 )
 
 // Command-line Arguments
