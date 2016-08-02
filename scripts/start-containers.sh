@@ -2,7 +2,7 @@
 
 # Copyright 2016 Matt Oswalt. Use or modification of this
 # source code is governed by the license provided here:
-# https://github.com/mierdin/todd:$branch/blob/master/LICENSE
+# https://github.com/mierdin/todd/blob/master/LICENSE
 
 # This script is designed to manage containers for ToDD. This could be start the basic infrastructure for ToDD like the etcd and rabbitmq containers,
 # or you could run with the "integration" arg, and run integration tests as well.
