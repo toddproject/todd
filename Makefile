@@ -12,6 +12,9 @@ build:
 
 compile:
 
+	./scripts/buildtestlets.sh
+	go install ./cmd/...
+
 	# Installing testlets
 	./scripts/gettestlets.sh
 
