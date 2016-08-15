@@ -18,6 +18,7 @@ ToDD Documentation
    objects.rst
    resources.rst
    testlets.rst
+   customtestlets.rst
 
 This is ToDD's documentation. The docs are a work in progress, but check back soon! I'll be updating this heavily over the next few days and weeks.
 
