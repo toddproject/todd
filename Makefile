@@ -11,6 +11,8 @@ build:
 	docker build -t mierdin/todd -f Dockerfile .
 
 compile:
+	# Need to support some kind of mode that allows for development (i.e. not downloading the testlets live, but rather from a directory?)
+	# eval ./scripts/buildtestlets.sh && go install ./cmd/...
 	./scripts/buildtestlets.sh
 	go install ./cmd/...
 
@@ -42,3 +44,6 @@ configureenv:
 	if ! [ "etc" -ef "/etc/todd" ]; then mkdir -p /etc/todd && cp -f ./etc/{agent,server}.cfg /etc/todd/; fi
 	mkdir -p /opt/todd/{agent,server}/assets/{factcollectors,testlets}
 	chmod -R 777 /opt/todd
+
+	# If on Linux, enable ping testlet functionality
+	sudo sysctl -w net.ipv4.ping_group_range="0 12345"
