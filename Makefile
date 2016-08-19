@@ -52,5 +52,10 @@ install:
 	mkdir -p /opt/todd/{agent,server}/assets/{factcollectors,testlets}
 	chmod -R 777 /opt/todd
 
+<<<<<<< 94fdc30dddc0f6844c8fb51d53bdbe543236aaa9
 	# If on Linux, enable ping testlet functionality (DEPRECATED in favor of granting socket capabilities on testlets)
 	# sysctl -w net.ipv4.ping_group_range="0 0" || echo "Unable to set kernel parameters to allow ping. Some testlets may not work."
+=======
+	# If on Linux, enable ping testlet functionality
+	sudo sysctl -w net.ipv4.ping_group_range="0 12345"
+>>>>>>> Updates to vagrant and make
