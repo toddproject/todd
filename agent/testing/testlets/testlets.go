@@ -12,10 +12,13 @@ import (
 )
 
 var (
-	testletsMu sync.RWMutex
-	testlets   = make(map[string]Testlet)
-	done       = make(chan error) // Used from within the goroutine to inform the infrastructure it has finished
-	kill       = make(chan bool)  // Used from outside the goroutine to inform the goroutine to stop
+	testletsMu     sync.RWMutex
+	testlets       = make(map[string]Testlet)
+	done           = make(chan error) // Used from within the goroutine to inform the infrastructure it has finished
+	kill           = make(chan bool)  // Used from outside the goroutine to inform the goroutine to stop
+	nativeTestlets = map[string]string{
+		"ping": "toddping",
+	}
 )
 
 // Testlet defines what a testlet should look like if built in native
@@ -107,11 +110,11 @@ func (b BaseTestlet) Kill() error {
 
 // IsNativeTestlet polls the list of registered native testlets, and returns
 // true if the referenced name exists
-func IsNativeTestlet(name string) bool {
-	if _, ok := testlets[name]; ok {
-		return true
+func IsNativeTestlet(name string) (bool, string) {
+	if _, ok := nativeTestlets[name]; ok {
+		return true, nativeTestlets[name]
 	} else {
-		return false
+		return false, ""
 	}
 }
 
