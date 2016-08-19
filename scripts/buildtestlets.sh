@@ -12,29 +12,51 @@ set -o pipefail
 
 
 testlets=(
-     'https://github.com/Mierdin/todd-nativetestlet-ping.git'
+     'github.com/toddproject/todd-nativetestlet-ping'
    )
 
 
-rm -rf testlettemp && mkdir testlettemp && cd testlettemp
+#rm -rf testlettemp && mkdir testlettemp && cd testlettemp
 
 for i in "${testlets[@]}"
 do
-   git clone $i
+   #echo "Installing $i"
+   # git clone $i --quiet
+   go get -d -u $i/...
 done
 
-cd ..
+# cd ..
 
-rm -rf agent/testing/downloaded_testlets/ && mkdir agent/testing/downloaded_testlets
+# rm -rf agent/testing/downloaded_testlets/ && mkdir agent/testing/downloaded_testlets
 
-for dir in ./testlettemp/*/
-do
-    dir=${dir%*/}
-    cp testlettemp/${dir##*/}/testlet/* agent/testing/downloaded_testlets
-    #echo ${dir##*/}
-done
+# for dir in ./testlettemp/*/
+# do
+#     dir=${dir%*/}
+#     cp testlettemp/${dir##*/}/testlet/* agent/testing/downloaded_testlets
+#     #echo ${dir##*/}
 
-rm -rf testlettemp
+    
+
+#     testletdir="$(pwd)/$dir"
+#     #echo $testletdir
+
+#     ln -s $testletdir/vendor/ $testletdir/vendor/src
+
+#     # echo ./testlettemp/todd-nativetestlet-ping
+
+#     # Append this vendor directory to GOPATH
+#     # TODO need to do some cleanup somewhere to remove this
+#     if [[ ":$GOPATH:" != *":$testletdir/vendor:"* ]]; then
+#         echo "export GOPATH=$GOPATH:$testletdir/vendor"
+#     fi
+    
+
+# done
+
+
+
+
+# rm -rf testlettemp
 
 
 

@@ -8,12 +8,21 @@ There are a number of testlets built-in to the ToDD agent and are usable simply 
 * http
 * bandwidth
 * ping
+* portknock
+
+These have their own separate repositories and are distributed alongside ToDD proper. They are written in Go for a number of reasons. First, it makes it easy for the testlets to honor the testlet format by leveraging some common code in the ToDD repository. However, the testlets are still their own binary. In addition, it allows ToDD to execute tests consistently across platforms (The old model of using bash scripts meant the tests had to be run on a certain platform for which that testlet knew how to parse the output)
 
 However, please see "Custom Testlets", and you'll find it's quite easy to build your own testlets and run them with ToDD. This extensibility was a core design principle of ToDD since the beginning of the project.
 
 
 Native Testlet Design Principles
 --------------------------------
+
+
+Need to talk about the native tests you've built in, and turn the "testlets" doc into more of a "so you want to build your own, eh?"
+
+Also need to figure out if you want to refer to both native and non-native as "testlets", or maybe reserve that for non-native
+
 
 Need a design guide outlining some requirements for native testlets:
 
