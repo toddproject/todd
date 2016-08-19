@@ -69,94 +69,124 @@ func (ett ExecuteTestRunTask) Run() error {
 	// Specify size of wait group
 	wg.Add(len(tr.Targets))
 
+	//native := false
+
+	// for old, newname := range testlets.nativeTestlets {
+	// 	if tr.Testlet == old {
+	// 		tr.Testlet = newname
+	// 		native = true
+	// 		break
+	// 	}
+	// }
+
+	// log.Error(tr.Testlet)
+	// log.Error(testlets.IsNativeTestlet(tr.Testlet))
+
+	var testlet_path string
+	//if testlets.IsNativeTestlet(tr.Testlet) {
+	isNative, newTestletName := testlets.IsNativeTestlet(tr.Testlet)
+	log.Error("POOP")
+	log.Error(isNative)
+	log.Error(newTestletName)
+	if isNative {
+
+		log.Error("POOP2")
+
+		tr.Testlet = newTestletName
+
+		log.Error(tr.Testlet)
+
+		// Generate path to testlet and make sure it exists.
+		testlet_path = fmt.Sprintf("%s", tr.Testlet)
+		// if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
+		// 	log.Error(err)
+		// 	log.Errorf("Testlet %s does not exist on this agent", tr.Testlet)
+		// 	return errors.New("Error executing testrun - testlet doesn't exist on this agent.")
+		// }
+	} else {
+		// Generate path to testlet and make sure it exists.
+		testlet_path = fmt.Sprintf("%s/assets/testlets/%s", ett.Config.LocalResources.OptDir, tr.Testlet)
+		if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
+			log.Errorf("Testlet %s does not exist on this agent", tr.Testlet)
+			return errors.New("Error executing testrun - testlet doesn't exist on this agent.")
+		}
+	}
+
 	// Execute testlets against all targets asynchronously
 	for i := range tr.Targets {
 
 		thisTarget := tr.Targets[i]
 
-		if testlets.IsNativeTestlet(tr.Testlet) {
+		go func() {
+
+			defer wg.Done()
+
+			log.Debugf("Full testlet command and args: '%s %s %s'", tr.Testlet, thisTarget, tr.Args)
+			cmd := exec.Command(tr.Testlet, thisTarget, tr.Args)
+
+			// Stdout buffer
+			cmdOutput := &bytes.Buffer{}
+			// Attach buffer to command
+			cmd.Stdout = cmdOutput
+
+			// Execute collector
+			cmd.Start()
+
+			// TODO(mierdin): Does this need to be a buffered channel?
+			done := make(chan error, 1)
 			go func() {
-
-				// TODO(mierdin): Something worried me here (can't remember what) regarding
-				// if only some agents were running native testlets, does this wait group methodology work?
-				// Sorry it's not clear, I have had a bit too much wine.
-				defer wg.Done()
-
-				nativeTestlet, err := testlets.NewTestlet(tr.Testlet)
-				if err != nil {
-					//TODO(mierdin) do something
-				}
-
-				metrics, err := nativeTestlet.Run("8.8.8.8", []string{"-c 10", "-s"}, ett.TimeLimit)
-				//log.Error(nativeTestlet.RunFunction)
-				if err != nil {
-					log.Errorf("Testlet <TESTLET> completed with error '%s'", err)
-					gatheredData[thisTarget] = "error"
-				}
-
-				// The metrics infrastructure requires that we collect metrics as a JSON string
-				// (which is a result of building non-native testlets in early versions of ToDD)
-				// So let's convert, and add to gatheredData
-				metrics_json, err := json.Marshal(metrics)
-				if err != nil {
-					//TODO(mierdin) do something
-				}
-				gatheredData[thisTarget] = string(metrics_json)
-
+				done <- cmd.Wait()
 			}()
-		} else {
-			// Generate path to testlet and make sure it exists.
-			testlet_path := fmt.Sprintf("%s/assets/testlets/%s", ett.Config.LocalResources.OptDir, tr.Testlet)
-			if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
-				log.Errorf("Testlet %s does not exist on this agent", tr.Testlet)
-				return errors.New("Error executing testrun - testlet doesn't exist on this agent.")
+
+			// This select statement will block until one of these two conditions are met:
+			// - The testlet finishes, in which case the channel "done" will be receive a value
+			// - The configured time limit is exceeded (expected for testlets running in server mode)
+			select {
+			case <-time.After(time.Duration(ett.TimeLimit) * time.Second):
+				if err := cmd.Process.Kill(); err != nil {
+					log.Errorf("Failed to kill %s after timeout: %s", testlet_path, err)
+				} else {
+					log.Debug("Successfully killed ", testlet_path)
+				}
+			case err := <-done:
+				if err != nil {
+					log.Errorf("Testlet %s completed with error '%s'", testlet_path, err)
+					gatheredData[thisTarget] = "error"
+				} else {
+					log.Debugf("Testlet %s completed without error", testlet_path)
+				}
 			}
 
-			go func() {
+			// Record test data
+			gatheredData[thisTarget] = string(cmdOutput.Bytes())
+			// // TODO(mierdin): Something worried me here (can't remember what) regarding
+			// // if only some agents were running native testlets, does this wait group methodology work?
+			// // Sorry it's not clear, I have had a bit too much wine.
+			// defer wg.Done()
 
-				defer wg.Done()
+			// nativeTestlet, err := testlets.NewTestlet(tr.Testlet)
+			// if err != nil {
+			// 	//TODO(mierdin) do something
+			// }
 
-				log.Debugf("Full testlet command and args: '%s %s %s'", testlet_path, thisTarget, tr.Args)
-				cmd := exec.Command(testlet_path, thisTarget, tr.Args)
+			// metrics, err := nativeTestlet.Run("8.8.8.8", []string{"-c 10", "-s"}, ett.TimeLimit)
+			// //log.Error(nativeTestlet.RunFunction)
+			// if err != nil {
+			// 	log.Errorf("Testlet <TESTLET> completed with error '%s'", err)
+			// 	gatheredData[thisTarget] = "error"
+			// }
 
-				// Stdout buffer
-				cmdOutput := &bytes.Buffer{}
-				// Attach buffer to command
-				cmd.Stdout = cmdOutput
+			// // The metrics infrastructure requires that we collect metrics as a JSON string
+			// // (which is a result of building non-native testlets in early versions of ToDD)
+			// // So let's convert, and add to gatheredData
+			// metrics_json, err := json.Marshal(metrics)
+			// if err != nil {
+			// 	//TODO(mierdin) do something
+			// }
+			// gatheredData[thisTarget] = string(metrics_json)
 
-				// Execute collector
-				cmd.Start()
+		}()
 
-				// TODO(mierdin): Does this need to be a buffered channel?
-				done := make(chan error, 1)
-				go func() {
-					done <- cmd.Wait()
-				}()
-
-				// This select statement will block until one of these two conditions are met:
-				// - The testlet finishes, in which case the channel "done" will be receive a value
-				// - The configured time limit is exceeded (expected for testlets running in server mode)
-				select {
-				case <-time.After(time.Duration(ett.TimeLimit) * time.Second):
-					if err := cmd.Process.Kill(); err != nil {
-						log.Errorf("Failed to kill %s after timeout: %s", testlet_path, err)
-					} else {
-						log.Debug("Successfully killed ", testlet_path)
-					}
-				case err := <-done:
-					if err != nil {
-						log.Errorf("Testlet %s completed with error '%s'", testlet_path, err)
-						gatheredData[thisTarget] = "error"
-					} else {
-						log.Debugf("Testlet %s completed without error", testlet_path)
-					}
-				}
-
-				// Record test data
-				gatheredData[thisTarget] = string(cmdOutput.Bytes())
-
-			}()
-		}
 	}
 
 	wg.Wait()
