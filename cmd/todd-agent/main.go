@@ -25,8 +25,9 @@ import (
 	"github.com/Mierdin/todd/hostresources"
 
 	// Testlet imports (importing these packages registers the testlets)
-	_ "github.com/Mierdin/todd/agent/testing/downloaded_testlets"
-)
+	// Need to make this dynamic if possible (at compile time of course)
+	// TODO Not necessary anymore
+	//_ "github.com/toddproject/todd-nativetestlet-ping/testlet"
 
 // Command-line Arguments
 var arg_config string

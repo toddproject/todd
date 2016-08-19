@@ -1,0 +1,7 @@
+---
+type: group
+label: branch-uraj
+spec:
+    group: branch-uraj
+    matches:
+    - hostname: "uraj"
