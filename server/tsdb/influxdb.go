@@ -46,10 +46,14 @@ func (ifdb influxDB) WriteData(testUuid, testRunName, groupName string, testData
 	defer c.Close()
 
 	// Create a new point batch
-	bp, _ := influx.NewBatchPoints(influx.BatchPointsConfig{
+	bp, err := influx.NewBatchPoints(influx.BatchPointsConfig{
 		Database:  ifdb.config.TSDB.DatabaseName,
 		Precision: "s",
 	})
+	if err != nil {
+		log.Error("Error creating InfluxDB Batch Points: ", err)
+		return err
+	}
 
 	// Need to publish data from all of the agents that took part in this test
 	for agentUuid, agentData := range testData {
@@ -68,12 +72,20 @@ func (ifdb influxDB) WriteData(testUuid, testRunName, groupName string, testData
 			// Convert our metrics to float and insert into influx fields
 			fields := make(map[string]interface{})
 			for k, v := range metrics {
-				float_v, _ := strconv.ParseFloat(v, 64)
+				float_v, err := strconv.ParseFloat(v, 64)
+				if err != nil {
+					log.Errorf("Error parsing metric value from %q, %q=%q: %v\n", targetAddress, k, v, err)
+					return err
+				}
 				fields[k] = float_v
 			}
-			pt, _ := influx.NewPoint(fmt.Sprintf("testrun-%s", testRunName), tags, fields, time.Now())
-			bp.AddPoint(pt)
+			pt, err := influx.NewPoint(fmt.Sprintf("testrun-%s", testRunName), tags, fields, time.Now())
+			if err != nil {
+				log.Error("Error creating InfluxDB Point: ", err)
+				return err
+			}
 
+			bp.AddPoint(pt)
 		}
 
 	}
@@ -81,7 +93,7 @@ func (ifdb influxDB) WriteData(testUuid, testRunName, groupName string, testData
 	// Write the batch
 	err = c.Write(bp)
 	if err != nil {
-		log.Fatal(err)
+		log.Error("Error writing InfluxDB Batch Points: ", err)
 		return err
 	}
 
