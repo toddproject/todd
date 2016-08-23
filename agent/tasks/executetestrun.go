@@ -25,16 +25,6 @@ import (
 	"github.com/Mierdin/todd/config"
 )
 
-var (
-	// gatheredData represents test data from this agent for all targets.
-	// Key is target name, value is JSON output from testlet for that target
-	// This is reset to a blank map every time ExecuteTestRunTask is called
-	gatheredData = make(map[string]string)
-
-	// Use a wait group to ensure that all of the testlets have a chance to finish
-	wg sync.WaitGroup
-)
-
 // ExecuteTestRunTask defines this particular task.
 type ExecuteTestRunTask struct {
 	BaseTask
@@ -48,8 +38,13 @@ type ExecuteTestRunTask struct {
 // a testrun will be executed once per target, all in parallel.
 func (ett ExecuteTestRunTask) Run() error {
 
-	// Make sure we're working with a clean slate
-	gatheredData = map[string]string{}
+	// gatheredData represents test data from this agent for all targets.
+	// Key is target name, value is JSON output from testlet for that target
+	// This is reset to a blank map every time ExecuteTestRunTask is called
+	gatheredData := map[string]string{}
+
+	// Use a wait group to ensure that all of the testlets have a chance to finish
+	var wg sync.WaitGroup
 
 	// Waiting three seconds to ensure all the agents have their tasks before we potentially hammer the network
 	// TODO(mierdin): This is a temporary measure - in the future, testruns will be executed via time schedule,
@@ -110,7 +105,7 @@ func (ett ExecuteTestRunTask) Run() error {
 			// Execute collector
 			cmd.Start()
 
-			// TODO(mierdin): Does this need to be a buffered channel?
+			// TODO(mierdin): Why is this a buffered channel? Is this necessary?
 			done := make(chan error, 1)
 			go func() {
 				done <- cmd.Wait()
