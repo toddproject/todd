@@ -45,16 +45,15 @@ func (itt InstallTestRunTask) Run() error {
 
 	var testlet_path string
 
-	// Determine if this is a valid native testlet
-	//_, err := testlets.NewTestlet(itt.Tr.Testlet)
+	// Determine if this is a native testlet
 	isNative, newName := testlets.IsNativeTestlet(itt.Tr.Testlet)
-	// Not a native testlet - attempt to run check mode on testlet in filesystem
-	if isNative {
-		// Nothing to do, as we're using a native testlet
-		log.Infof("%s is a native testlet - installing testrun.", itt.Tr.Testlet)
-		//itt.Tr.Testlet = newName
-		testlet_path = newName
 
+	// If we're running a native testlet, we want testlet_path to simply be the testlet name
+	// (since it is a requirement that the native-Go testlets are in the PATH)
+	// If the testlet is not native, we can get the full path.
+	if isNative {
+		log.Infof("%s is a native testlet - installing testrun.", itt.Tr.Testlet)
+		testlet_path = newName
 	} else {
 		// Generate path to testlet and make sure it exists.
 		testlet_path = fmt.Sprintf("%s/assets/testlets/%s", itt.Config.LocalResources.OptDir, itt.Tr.Testlet)
