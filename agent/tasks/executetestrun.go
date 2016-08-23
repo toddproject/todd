@@ -52,8 +52,9 @@ func (ett ExecuteTestRunTask) Run() error {
 	gatheredData = map[string]string{}
 
 	// Waiting three seconds to ensure all the agents have their tasks before we potentially hammer the network
-	// TODO(mierdin): This is a bit of a copout. I would like to do something a little more robust than simply waiting
-	// for a few seconds in the future.
+	// TODO(mierdin): This is a temporary measure - in the future, testruns will be executed via time schedule,
+	// making not only this sleep, but also the entire task unnecessary. Testruns will simply be installed, and
+	// executed when the time is right.
 	time.Sleep(3000 * time.Millisecond)
 
 	// Retrieve test from cache by UUID
@@ -66,51 +67,28 @@ func (ett ExecuteTestRunTask) Run() error {
 
 	log.Debugf("IMMA FIRIN MAH LAZER (for test %s) ", ett.TestUuid)
 
-	// Specify size of wait group
+	// Specify size of wait group equal to number of targets
 	wg.Add(len(tr.Targets))
 
-	//native := false
-
-	// for old, newname := range testlets.nativeTestlets {
-	// 	if tr.Testlet == old {
-	// 		tr.Testlet = newname
-	// 		native = true
-	// 		break
-	// 	}
-	// }
-
-	// log.Error(tr.Testlet)
-	// log.Error(testlets.IsNativeTestlet(tr.Testlet))
-
 	var testlet_path string
-	//if testlets.IsNativeTestlet(tr.Testlet) {
 	isNative, newTestletName := testlets.IsNativeTestlet(tr.Testlet)
-	log.Error("POOP")
-	log.Error(isNative)
-	log.Error(newTestletName)
+
+	// If we're running a native testlet, we want testlet_path to simply be the testlet name
+	// (since it is a requirement that the native-Go testlets are in the PATH)
+	// If the testlet is not native, we can get the full path.
 	if isNative {
-
-		log.Error("POOP2")
-
-		tr.Testlet = newTestletName
-
-		log.Error(tr.Testlet)
-
-		// Generate path to testlet and make sure it exists.
-		testlet_path = fmt.Sprintf("%s", tr.Testlet)
-		// if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
-		// 	log.Error(err)
-		// 	log.Errorf("Testlet %s does not exist on this agent", tr.Testlet)
-		// 	return errors.New("Error executing testrun - testlet doesn't exist on this agent.")
-		// }
+		testlet_path = newTestletName
 	} else {
 		// Generate path to testlet and make sure it exists.
 		testlet_path = fmt.Sprintf("%s/assets/testlets/%s", ett.Config.LocalResources.OptDir, tr.Testlet)
 		if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
-			log.Errorf("Testlet %s does not exist on this agent", tr.Testlet)
+			log.Errorf("Testlet %s does not exist on this agent", testlet_path)
 			return errors.New("Error executing testrun - testlet doesn't exist on this agent.")
 		}
 	}
+
+	// TODO(mierdin): What about testlets running as servers (i.e. 'iperf -s')? Are we spinning up len(tr.Targets)
+	// number of those?
 
 	// Execute testlets against all targets asynchronously
 	for i := range tr.Targets {
@@ -121,8 +99,8 @@ func (ett ExecuteTestRunTask) Run() error {
 
 			defer wg.Done()
 
-			log.Debugf("Full testlet command and args: '%s %s %s'", tr.Testlet, thisTarget, tr.Args)
-			cmd := exec.Command(tr.Testlet, thisTarget, tr.Args)
+			log.Debugf("Full testlet command and args: '%s %s %s'", testlet_path, thisTarget, tr.Args)
+			cmd := exec.Command(testlet_path, thisTarget, tr.Args)
 
 			// Stdout buffer
 			cmdOutput := &bytes.Buffer{}
@@ -159,34 +137,7 @@ func (ett ExecuteTestRunTask) Run() error {
 
 			// Record test data
 			gatheredData[thisTarget] = string(cmdOutput.Bytes())
-			// // TODO(mierdin): Something worried me here (can't remember what) regarding
-			// // if only some agents were running native testlets, does this wait group methodology work?
-			// // Sorry it's not clear, I have had a bit too much wine.
-			// defer wg.Done()
-
-			// nativeTestlet, err := testlets.NewTestlet(tr.Testlet)
-			// if err != nil {
-			// 	//TODO(mierdin) do something
-			// }
-
-			// metrics, err := nativeTestlet.Run("8.8.8.8", []string{"-c 10", "-s"}, ett.TimeLimit)
-			// //log.Error(nativeTestlet.RunFunction)
-			// if err != nil {
-			// 	log.Errorf("Testlet <TESTLET> completed with error '%s'", err)
-			// 	gatheredData[thisTarget] = "error"
-			// }
-
-			// // The metrics infrastructure requires that we collect metrics as a JSON string
-			// // (which is a result of building non-native testlets in early versions of ToDD)
-			// // So let's convert, and add to gatheredData
-			// metrics_json, err := json.Marshal(metrics)
-			// if err != nil {
-			// 	//TODO(mierdin) do something
-			// }
-			// gatheredData[thisTarget] = string(metrics_json)
-
 		}()
-
 	}
 
 	wg.Wait()
