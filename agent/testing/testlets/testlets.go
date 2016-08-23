@@ -6,16 +6,37 @@ import (
 	"sort"
 	"sync"
 	"time"
-	//"sync/atomic"
 
 	log "github.com/Sirupsen/logrus"
 )
 
+// NOTE
+//
+// Early efforts to build native-Go testlets involved the embedding of testlet logic into the
+// ToDD agent itself. As a result, it was important to build some reusable infrastructure so that goroutines
+// running testlet code inside the agent could be controlled, and that new testlets could benefit from this
+// infrastructure.
+//
+// Since then, the decision was made to keep testlets as their own separate binaries. Despite this, we can still benefit
+// from having them in Go because it is much more cross-platform than bash scripts.
+//
+// These testlets are in their own repositories, and they do actually use some of the logic below, just not as meaningfully
+// and comprehensively as they would have if they were baked in to the agent.  Those testlets will still vendor this code
+// and leverage the "Testlet" interface so that in the future, if we want to roll these into the todd-agent, those
+// testlets will already conform to the standard provided below.
+
 var (
-	testletsMu     sync.RWMutex
-	testlets       = make(map[string]Testlet)
-	done           = make(chan error) // Used from within the goroutine to inform the infrastructure it has finished
-	kill           = make(chan bool)  // Used from outside the goroutine to inform the goroutine to stop
+	testletsMu sync.RWMutex
+	testlets   = make(map[string]Testlet)
+	done       = make(chan error) // Used from within the goroutine to inform the infrastructure it has finished
+	kill       = make(chan bool)  // Used from outside the goroutine to inform the goroutine to stop
+
+	// This map provides name redirection so that the native testlets can use names that don't
+	// conflict with existing system tools (i.e. using "toddping" instead of "ping") but users
+	// can still refer to the testlets using simple names.
+	//
+	// In short, users refer to the testlet by <key> and this map will redirect to the
+	// actual binary name <value>
 	nativeTestlets = map[string]string{
 		"ping": "toddping",
 	}
@@ -73,7 +94,8 @@ func (b BaseTestlet) Run(target string, args []string, timeLimit int) (map[strin
 	// kill = make(chan bool)
 
 	// TODO(mierdin): Based on experimentation, this will keep running even if this function returns.
-	// Need to be sure about how this ends. Also might want to evaluate the same for the existing non-native model, likely has the same issue
+	// Need to be sure about how this ends. Also might want to evaluate the same for the existing
+	// non-native model, likely has the same issue
 	go func() {
 		theseMetrics, err := b.RunFunction(target, args, kill)
 		metrics = theseMetrics //TODO(mierdin): Gross.

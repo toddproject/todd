@@ -11,9 +11,12 @@ build:
 	docker build -t mierdin/todd -f Dockerfile .
 
 compile:
-	# Need to support some kind of mode that allows for development (i.e. not downloading the testlets live, but rather from a directory?)
-	# eval ./scripts/buildtestlets.sh && go install ./cmd/...
-	./scripts/buildtestlets.sh
+	# TODO(mierdin): Need to support some kind of mode that allows for development (i.e. not downloading the testlets live, but rather from a directory?)
+
+	# Installing testlets
+	./scripts/gettestlets.sh
+
+	# Installing ToDD
 	go install ./cmd/...
 
 install: configureenv
