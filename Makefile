@@ -11,8 +11,11 @@ build:
 	docker build -t mierdin/todd -f Dockerfile .
 
 compile:
-	# TODO(mierdin): Need to support some kind of mode that allows for development (i.e. not downloading the testlets live, but rather from a directory?)
-
+	# TODO(mierdin): Need to support some kind of mode that allows for development.
+	# The current gettestlets.sh script downloads the testlets from Github, meaning
+	# a developer would already have to have changes pushed to those repos' master
+	# Looking for something like devstack, etc.
+	#
 	# Installing testlets
 	./scripts/gettestlets.sh
 
