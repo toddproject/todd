@@ -6,7 +6,7 @@
    https://github.com/Mierdin/todd/blob/master/LICENSE
 */
 
-package testing
+package testlets
 
 import (
 	"errors"
