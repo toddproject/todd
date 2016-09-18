@@ -103,6 +103,14 @@ func (b BaseTestlet) Run(target string, args []string, timeLimit int) (map[strin
 
 	go func() {
 		metrics, err := b.RunFunction(target, args, kill)
+<<<<<<< 5056f30dcb3a2cf7a20e251b620c8220217f2f4b:agent/testing/testlets.go
+=======
+
+		// TODO(mierdin): avoiding a "declared and not used" error for now
+		// If this code is ever actually used, it should be modified to make "done" a channel that returns the metrics, so it's actually used (just an idea)
+		log.Error(metrics)
+
+>>>>>>> Updated testlets.go:agent/testing/testlets/testlets.go
 		done <- err
 	}()
 
