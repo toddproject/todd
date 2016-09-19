@@ -18,22 +18,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-// NOTE
-//
-// Early efforts to build native-Go testlets involved the embedding of testlet logic into the
-// ToDD agent itself. As a result, it was important to build some reusable infrastructure so that goroutines
-// running testlet code inside the agent could be controlled, and that new testlets could benefit from this
-// infrastructure.
-//
-// Since then, the decision was made to keep testlets as their own separate binaries.
-//
-// These testlets are in their own repositories, and they do actually use some of the logic below, just not as meaningfully
-// and comprehensively as they would have if they were baked in to the agent.  The development standard for all "blessed"
-// testlets will still ensure that they use this interface, so that if we decide to bake them into the agent in the future,
-// they'll already conform.
-//
-// (The vast majority of this code was inspired by the database drivers implementation in the stdlib)
-
 var (
 	testletsMu sync.RWMutex
 	testlets   = make(map[string]Testlet)
@@ -83,6 +67,22 @@ type Testlet interface {
 	Kill() error
 }
 
+// NOTE
+//
+// Early efforts to build native-Go testlets involved the embedding of testlet logic into the
+// ToDD agent itself. As a result, it was important to build some reusable infrastructure so that goroutines
+// running testlet code within the agent could be controlled, and that new testlets could benefit from this
+// infrastructure.
+//
+// Since then, the decision was made to keep testlets as their own separate binaries.
+//
+// These testlets are in their own repositories, and they do actually use some of the logic below, just not as meaningfully
+// and comprehensively as they would have if they were baked in to the agent.  The development standard for all "blessed"
+// testlets will still ensure that they use this interface, so that if we decide to bake them into the agent in the future,
+// they'll already conform.
+//
+// (The vast majority of this code was inspired by the database drivers implementation in the stdlib)
+
 type rtfunc func(target string, args []string, kill chan bool) (map[string]string, error)
 
 type BaseTestlet struct {
@@ -105,7 +105,8 @@ func (b BaseTestlet) Run(target string, args []string, timeLimit int) (map[strin
 		metrics, err := b.RunFunction(target, args, kill)
 
 		// TODO(mierdin): avoiding a "declared and not used" error for now
-		// If this code is ever actually used, it should be modified to make "done" a channel that returns the metrics, so it's actually used (just an idea)
+		// If this code is ever actually used, it should be modified to make "done"
+		// a channel that returns the metrics, so it's actually used (just an idea)
 		log.Error(metrics)
 
 		done <- err
@@ -161,6 +162,27 @@ func NewTestlet(name string) (Testlet, error) {
 // Register makes a testlet available by the provided name.
 // If Register is called twice with the same name or if testlet is nil,
 // it will return an error
+//
+// =======
+// EXAMPLE
+// =======
+// // PingTestlet is one example that satisfies interface Testlet
+// var pt = ping.PingTestlet{}
+
+// // Ensure the RunFunction attribute is set correctly.
+// // This allows the underlying testlet infrastructure
+// // to know what function to call at runtime
+// pt.RunFunction = pt.RunTestlet
+
+// // This is important - register the name of this testlet
+// // (the name the user will use in a testrun definition)
+// //testlets.Register("ping", &pt)
+//
+// =======
+//
+// TODO(mierdin): This is no longer used now that testlets are separate binaries,
+// but one idea for the future could be that this function could register to the
+//todd-agent via IPC of some kind, so that nativeTestlets is no longer needed
 func Register(name string, testlet Testlet) error {
 	testletsMu.Lock()
 	defer testletsMu.Unlock()
