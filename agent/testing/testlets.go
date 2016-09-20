@@ -9,13 +9,8 @@
 package testing
 
 import (
-	"errors"
-	"fmt"
-	"sort"
 	"sync"
-	"time"
-
-	log "github.com/Sirupsen/logrus"
+	// log "github.com/Sirupsen/logrus"
 )
 
 // NOTE
@@ -55,8 +50,8 @@ var (
 // go and compiled with the agent
 type Testlet interface {
 
-	// Run is the "workflow" function for a testlet. It handles running
-	// the RunTestlet function asynchronously and managing the state therein.
+	// Run is the "workflow" function for a testlet. All testing takes place here
+	// (or in a function called within)
 	//
 	// Params are
 	// target (string)
@@ -64,26 +59,28 @@ type Testlet interface {
 	// timeLimit (int in seconds)
 	//
 	// Returns:
-	// metrics (map[string]interface{})
+	// metrics (map[string]string)
 	// (name of metric is key, value is metric value)
-	//
-	// Keep as much logic out of here as possible. All native testlets
-	// must support a "Kill" method, so it's best to implement core testlet
-	// logic in a separate function so that the Run and Kill commands can manage
-	// execution of that logic in a goroutine
 	Run(string, []string, int) (map[string]string, error)
-
-	// RunTestlet is designed to be the one-stop shop for testlet logic.
-	// The developer of a native testlet just needs to implement the testlet logic here,
-	// without worrying about things like managing goroutines or channels. That's all
-	// managed by the "Run" or "Kill" functions
-	RunTestlet(string, []string, chan bool) (map[string]string, error)
-
-	// All testlets must be able to stop operation when sent a Kill command.
-	Kill() error
 }
 
-type rtfunc func(target string, args []string, kill chan bool) (map[string]string, error)
+// NOTE
+//
+// Early efforts to build native-Go testlets involved the embedding of testlet logic into the
+// ToDD agent itself. As a result, it was important to build some reusable infrastructure so that goroutines
+// running testlet code within the agent could be controlled, and that new testlets could benefit from this
+// infrastructure.
+//
+// Since then, the decision was made to keep testlets as their own separate binaries.
+//
+// These testlets are in their own repositories, and they do actually use some of the logic below, just not as meaningfully
+// and comprehensively as they would have if they were baked in to the agent.  The development standard for all "blessed"
+// testlets will still ensure that they use this interface, so that if we decide to bake them into the agent in the future,
+// they'll already conform.
+//
+// (The vast majority of this code was inspired by the database drivers implementation in the stdlib)
+
+type rtfunc func(target string, args []string, timeout int) (map[string]string, error)
 
 type BaseTestlet struct {
 
@@ -92,6 +89,7 @@ type BaseTestlet struct {
 	RunFunction rtfunc
 }
 
+<<<<<<< 287aa03c127fa5a60db0684c4e4340d6cec19f62:agent/testing/testlets.go
 // Run takes care of running the testlet function and managing it's operation given the parameters provided
 func (b BaseTestlet) Run(target string, args []string, timeLimit int) (map[string]string, error) {
 
@@ -139,6 +137,8 @@ func (b BaseTestlet) Kill() error {
 	return nil
 }
 
+=======
+>>>>>>> removed all old work from testlets (moved to archive):agent/testing/testlets/testlets.go
 // IsNativeTestlet polls the list of registered native testlets, and returns
 // true if the referenced name exists
 func IsNativeTestlet(name string) (bool, string) {
@@ -148,6 +148,7 @@ func IsNativeTestlet(name string) (bool, string) {
 		return false, ""
 	}
 }
+<<<<<<< 287aa03c127fa5a60db0684c4e4340d6cec19f62:agent/testing/testlets.go
 
 //NewTestlet produces a new testlet based on the "name" param
 func NewTestlet(name string) (Testlet, error) {
@@ -195,3 +196,5 @@ func Testlets() []string {
 	sort.Strings(list)
 	return list
 }
+=======
+>>>>>>> removed all old work from testlets (moved to archive):agent/testing/testlets/testlets.go
