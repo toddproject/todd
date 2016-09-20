@@ -1,68 +1,78 @@
 /*
-	ToDD Agent - Test Reporting
+   ToDD testing package
 
-	This file contains functions that watch the agent cache and upload test data when present.
+   Contains infrastructure running testlets as well as maintaining
+   conformance for other native-Go testlet projects
 
-	Copyright 2016 Matt Oswalt. Use or modification of this
-	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+   Copyright 2016 Matt Oswalt. Use or modification of this
+   source code is governed by the license provided here:
+   https://github.com/Mierdin/todd/blob/master/LICENSE
 */
 
 package testing
 
-import (
-	"errors"
-	"time"
+var (
 
-	log "github.com/Sirupsen/logrus"
-
-	"github.com/Mierdin/todd/agent/cache"
-	"github.com/Mierdin/todd/agent/responses"
-	"github.com/Mierdin/todd/comms"
-	"github.com/Mierdin/todd/config"
+	// This map provides name redirection so that the native testlets can use names that don't
+	// conflict with existing system tools (i.e. using "toddping" instead of "ping") but users
+	// can still refer to the testlets using simple names.
+	//
+	// In short, users refer to the testlet by <key> and this map will redirect to the
+	// actual binary name <value>
+	nativeTestlets = map[string]string{
+		"ping": "toddping",
+	}
 )
 
-// WatchForFinishedTestRuns simply watches the local cache for any test runs that have test data.
-// It will periodically look at the table and send any present test data back to the server as a response.
-// When the server has successfully received this data, it will send a task back to this specific agent
-// to delete this row from the cache.
-func WatchForFinishedTestRuns(cfg config.Config) error {
+// Testlet defines what a testlet should look like if built in native
+// go and compiled with the agent
+type Testlet interface {
 
-	var ac = cache.NewAgentCache(cfg)
+	// Run is the "workflow" function for a testlet. All testing takes place here
+	// (or in a function called within)
+	//
+	// Params are
+	// target (string)
+	// args ([]string)
+	// timeLimit (int in seconds)
+	//
+	// Returns:
+	// metrics (map[string]string)
+	// (name of metric is key, value is metric value)
+	Run(string, []string, int) (map[string]string, error)
+}
 
-	agentUuid := ac.GetKeyValue("uuid")
+// NOTE
+//
+// Early efforts to build native-Go testlets involved the embedding of testlet logic into the
+// ToDD agent itself. As a result, it was important to build some reusable infrastructure so that goroutines
+// running testlet code within the agent could be controlled, and that new testlets could benefit from this
+// infrastructure.
+//
+// Since then, the decision was made to keep testlets as their own separate binaries.
+//
+// These testlets are in their own repositories, and they do actually use some of the logic below, just not as meaningfully
+// and comprehensively as they would have if they were baked in to the agent.  The development standard for all "blessed"
+// testlets will still ensure that they use this interface, so that if we decide to bake them into the agent in the future,
+// they'll already conform.
+//
+// (The vast majority of this code was inspired by the database drivers implementation in the stdlib)
 
-	for {
+type rtfunc func(target string, args []string, timeout int) (map[string]string, error)
 
-		time.Sleep(5000 * time.Millisecond)
+type BaseTestlet struct {
 
-		testruns, err := ac.GetFinishedTestRuns()
-		if err != nil {
-			log.Error("Problem retrieving finished test runs")
-			return errors.New("Problem retrieving finished test runs")
-		}
+	// rtfunc is a type that will store our RunTestlet function. It is the responsibility
+	// of the "child" testlet to set this value upon creation
+	RunFunction rtfunc
+}
 
-		for testUuid, testData := range testruns {
-
-			log.Debug("Found ripe testrun: ", testUuid)
-
-			var utdr = responses.UploadTestDataResponse{
-				TestUuid: testUuid,
-				TestData: testData,
-			}
-			utdr.AgentUuid = agentUuid
-			utdr.Type = "TestData" //TODO(mierdin): This is an extra step. Maybe a factory function for the task could help here?
-
-			tc, err := comms.NewToDDComms(cfg)
-			if err != nil {
-				return err
-			}
-			tc.CommsPackage.SendResponse(utdr)
-
-		}
-
+// IsNativeTestlet polls the list of registered native testlets, and returns
+// true if the referenced name exists
+func IsNativeTestlet(name string) (bool, string) {
+	if _, ok := nativeTestlets[name]; ok {
+		return true, nativeTestlets[name]
+	} else {
+		return false, ""
 	}
-
-	return nil
-
 }
