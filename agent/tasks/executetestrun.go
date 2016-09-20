@@ -21,7 +21,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/Mierdin/todd/agent/cache"
-	"github.com/Mierdin/todd/agent/testing/testlets"
+	"github.com/Mierdin/todd/agent/testing"
 	"github.com/Mierdin/todd/config"
 )
 
@@ -66,7 +66,7 @@ func (ett ExecuteTestRunTask) Run() error {
 	wg.Add(len(tr.Targets))
 
 	var testlet_path string
-	isNative, newTestletName := testlets.IsNativeTestlet(tr.Testlet)
+	isNative, newTestletName := testing.IsNativeTestlet(tr.Testlet)
 
 	// If we're running a native testlet, we want testlet_path to simply be the testlet name
 	// (since it is a requirement that the native-Go testlets are in the PATH)
