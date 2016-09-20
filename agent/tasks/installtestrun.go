@@ -20,7 +20,7 @@ import (
 
 	"github.com/Mierdin/todd/agent/cache"
 	"github.com/Mierdin/todd/agent/defs"
-	"github.com/Mierdin/todd/agent/testing/testlets"
+	"github.com/Mierdin/todd/agent/testing"
 	"github.com/Mierdin/todd/config"
 )
 
@@ -46,7 +46,7 @@ func (itt InstallTestRunTask) Run() error {
 	var testlet_path string
 
 	// Determine if this is a native testlet
-	isNative, newName := testlets.IsNativeTestlet(itt.Tr.Testlet)
+	isNative, newName := testing.IsNativeTestlet(itt.Tr.Testlet)
 
 	// If we're running a native testlet, we want testlet_path to simply be the testlet name
 	// (since it is a requirement that the native-Go testlets are in the PATH)
