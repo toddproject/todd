@@ -11,11 +11,13 @@ build:
 	docker build -t mierdin/todd -f Dockerfile .
 
 compile:
-	# TODO(mierdin): Need to support some kind of mode that allows for development.
-	# The current gettestlets.sh script downloads the testlets from Github, meaning
-	# a developer would already have to have changes pushed to those repos' master
-	# Looking for something like devstack, etc.
+	# TODO(mierdin): The current gettestlets.sh script downloads the testlets from
+	# Github, meaning a developer would already have to have changes pushed to
+	# those repos' master.
 	#
+	# In a follow-up patch, a script will be provided that allows for rapid development
+	# (uses local repositories instead of pulling from GH). Something like devstack.
+
 	# Installing testlets
 	./scripts/gettestlets.sh
 
