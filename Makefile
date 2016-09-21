@@ -50,4 +50,4 @@ configureenv:
 	chmod -R 777 /opt/todd
 
 	# If on Linux, enable ping testlet functionality
-	sysctl -w net.ipv4.ping_group_range="0 12345"
+	sysctl -w net.ipv4.ping_group_range="0 0" || echo "Unable to set kernel parameters to allow ping. Some testlets may not work."
