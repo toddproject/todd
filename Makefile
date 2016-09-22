@@ -12,11 +12,9 @@ build:
 
 compile:
 
-	./scripts/buildtestlets.sh
-	go install ./cmd/...
-
 	# Installing testlets
 	./scripts/gettestlets.sh
+	./scripts/set-testlet-capabilities.sh
 
 	# Installing ToDD
 	go install ./cmd/...
@@ -43,9 +41,6 @@ start: compile
 	start-containers.sh 3 /etc/todd/server-int.cfg /etc/todd/agent-int.cfg
 
 install:
-
-	# Set testlet capabilities
-	./scripts/set-testlet-capabilities.sh
 
 	# Copy configs if etc and /etc/todd aren't linked
 	if ! [ "etc" -ef "/etc/todd" ]; then mkdir -p /etc/todd && cp -f ./etc/{agent,server}.cfg /etc/todd/; fi
