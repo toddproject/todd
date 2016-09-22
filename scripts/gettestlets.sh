@@ -19,5 +19,7 @@ testlets=(
 for i in "${testlets[@]}"
 do
    echo "Installing $i"
+
+   # This retrieves from GH if it doesn't exist, but if it does, it installs the local copy.
    go get -u $i/cmd/...
 done
