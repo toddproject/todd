@@ -11,12 +11,6 @@ build:
 	docker build -t mierdin/todd -f Dockerfile .
 
 compile:
-	# TODO(mierdin): The current gettestlets.sh script downloads the testlets from
-	# Github, meaning a developer would already have to have changes pushed to
-	# those repos' master.
-	#
-	# In a follow-up patch, a script will be provided that allows for rapid development
-	# (uses local repositories instead of pulling from GH). Something like devstack.
 
 	# Installing testlets
 	./scripts/gettestlets.sh
@@ -55,5 +49,5 @@ install:
 	mkdir -p /opt/todd/{agent,server}/assets/{factcollectors,testlets}
 	chmod -R 777 /opt/todd
 
-	# If on Linux, enable ping testlet functionality
-	sysctl -w net.ipv4.ping_group_range="0 0" || echo "Unable to set kernel parameters to allow ping. Some testlets may not work."
+	# If on Linux, enable ping testlet functionality (DEPRECATED in favor of granting socket capabilities on testlets)
+	# sysctl -w net.ipv4.ping_group_range="0 0" || echo "Unable to set kernel parameters to allow ping. Some testlets may not work."
