@@ -24,8 +24,6 @@ compile:
 	# Installing ToDD
 	go install ./cmd/...
 
-install: configureenv
-
 fmt:
 	go fmt github.com/mierdin/todd/...
 
@@ -43,7 +41,11 @@ update_assets:
 start: compile
 	start-containers.sh 3 /etc/todd/server-int.cfg /etc/todd/agent-int.cfg
 
-configureenv:
+install:
+
+	# Set testlet capabilities
+	./scripts/set-testlet-capabilities.sh
+
 	# Copy configs if etc and /etc/todd aren't linked
 	if ! [ "etc" -ef "/etc/todd" ]; then mkdir -p /etc/todd && cp -f ./etc/{agent,server}.cfg /etc/todd/; fi
 	mkdir -p /opt/todd/{agent,server}/assets/{factcollectors,testlets}
