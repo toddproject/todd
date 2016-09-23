@@ -21,7 +21,18 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/Mierdin/todd/agent/cache"
+	"github.com/Mierdin/todd/agent/testing/testlets"
 	"github.com/Mierdin/todd/config"
+)
+
+var (
+	// gatheredData represents test data from this agent for all targets.
+	// Key is target name, value is JSON output from testlet for that target
+	// This is reset to a blank map every time ExecuteTestRunTask is called
+	gatheredData = make(map[string]string)
+
+	// Use a wait group to ensure that all of the testlets have a chance to finish
+	wg sync.WaitGroup
 )
 
 // ExecuteTestRunTask defines this particular task.
@@ -37,9 +48,13 @@ type ExecuteTestRunTask struct {
 // a testrun will be executed once per target, all in parallel.
 func (ett ExecuteTestRunTask) Run() error {
 
+	// Make sure we're working with a clean slate
+	gatheredData = map[string]string{}
+
 	// Waiting three seconds to ensure all the agents have their tasks before we potentially hammer the network
-	// TODO(mierdin): This is a bit of a copout. I would like to do something a little more robust than simply waiting
-	// for a few seconds in the future.
+	// TODO(mierdin): This is a temporary measure - in the future, testruns will be executed via time schedule,
+	// making not only this sleep, but also the entire task unnecessary. Testruns will simply be installed, and
+	// executed when the time is right.
 	time.Sleep(3000 * time.Millisecond)
 
 	// Retrieve test from cache by UUID
@@ -50,22 +65,30 @@ func (ett ExecuteTestRunTask) Run() error {
 		return errors.New("Problem retrieving testrun from agent cache")
 	}
 
-	// Generate path to testlet and make sure it exists.
-	testlet_path := fmt.Sprintf("%s/assets/testlets/%s", ett.Config.LocalResources.OptDir, tr.Testlet)
-	if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
-		log.Errorf("Testlet %s does not exist on this agent", tr.Testlet)
-		return errors.New("Error executing testrun - testlet doesn't exist on this agent.")
-	}
-
 	log.Debugf("IMMA FIRIN MAH LAZER (for test %s) ", ett.TestUuid)
 
-	// Use a wait group to ensure that all of the testlets have a chance to finish
-	var wg sync.WaitGroup
+	// Specify size of wait group equal to number of targets
 	wg.Add(len(tr.Targets))
 
-	// gatheredData represents test data from this agent for all targets.
-	// Key is target name, value is JSON output from testlet for that target
-	gatheredData := make(map[string]string)
+	var testlet_path string
+	isNative, newTestletName := testlets.IsNativeTestlet(tr.Testlet)
+
+	// If we're running a native testlet, we want testlet_path to simply be the testlet name
+	// (since it is a requirement that the native-Go testlets are in the PATH)
+	// If the testlet is not native, we can get the full path.
+	if isNative {
+		testlet_path = newTestletName
+	} else {
+		// Generate path to testlet and make sure it exists.
+		testlet_path = fmt.Sprintf("%s/assets/testlets/%s", ett.Config.LocalResources.OptDir, tr.Testlet)
+		if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
+			log.Errorf("Testlet %s does not exist on this agent", testlet_path)
+			return errors.New("Error executing testrun - testlet doesn't exist on this agent.")
+		}
+	}
+
+	// TODO(mierdin): What about testlets running as servers (i.e. 'iperf -s')? Are we spinning up len(tr.Targets)
+	// number of those?
 
 	// Execute testlets against all targets asynchronously
 	for i := range tr.Targets {
@@ -73,6 +96,7 @@ func (ett ExecuteTestRunTask) Run() error {
 		thisTarget := tr.Targets[i]
 
 		go func() {
+
 			defer wg.Done()
 
 			log.Debugf("Full testlet command and args: '%s %s %s'", testlet_path, thisTarget, tr.Args)
@@ -86,6 +110,7 @@ func (ett ExecuteTestRunTask) Run() error {
 			// Execute collector
 			cmd.Start()
 
+			// TODO(mierdin): Does this need to be a buffered channel?
 			done := make(chan error, 1)
 			go func() {
 				done <- cmd.Wait()
@@ -112,7 +137,6 @@ func (ett ExecuteTestRunTask) Run() error {
 
 			// Record test data
 			gatheredData[thisTarget] = string(cmdOutput.Bytes())
-
 		}()
 	}
 

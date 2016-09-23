@@ -1,18 +1,18 @@
-ToDD Testlets
+Custom Testlets
 ================================
 
-Tests in ToDD are powered by something called "testlets". These are executable files (i.e. scripts, binaries) that accept a standard set of input, run a test application, and provide a standard set of output containing metrics from that test.
+ToDD was originally built with no testlets built-in to the agent. All tests were performed using external executable files (i.e. scripts, binaries) that accept a standard set of input, run a test application, and provide a standard set of output containing metrics from that test. Though ToDD has since adopted a number of testlets to be built-in to the agent for simplicity, this functionality still remains, so you can extend ToDD to run whatever types of tests you wish.
 
-This allows the user to simply "use" this application, and specify which agents run this application. All of the complicated stuff with respect to sending arguments to the underlying testing application as well as parsing the output, is performed inside the testlet.
+This allows the user to use any testing application (provided it is available on the system on which the ToDD agent is running, and specify which agents run this application. All of the complicated stuff with respect to sending arguments to the underlying testing application as well as parsing the output, is performed inside the testlet.
 
-.. image:: images/testlet.png
+.. image:: ../images/testlet.png
 
 The testlet is actually run by the ToDD agent, so if there are 3 agents participating in a test, then 3 testlets are running. All logic that performs the test should be contained within the 
 
 Testrun Definition
 ------------------
 
-When you want to run a certain testlet, you refer to it by name. There are a number of testlets built in to ToDD and are therefore reserved:
+When you want to run a certain testlet, you refer to it by name. There are a number of testlets built-in to ToDD and are therefore reserved:
 
 * http
 * bandwidth

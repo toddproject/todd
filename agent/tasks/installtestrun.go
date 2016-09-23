@@ -20,6 +20,7 @@ import (
 
 	"github.com/Mierdin/todd/agent/cache"
 	"github.com/Mierdin/todd/agent/defs"
+	"github.com/Mierdin/todd/agent/testing/testlets"
 	"github.com/Mierdin/todd/config"
 )
 
@@ -42,11 +43,24 @@ func (itt InstallTestRunTask) Run() error {
 		return errors.New("Testlet parameter for this testrun is null")
 	}
 
-	// Generate path to testlet and make sure it exists.
-	testlet_path := fmt.Sprintf("%s/assets/testlets/%s", itt.Config.LocalResources.OptDir, itt.Tr.Testlet)
-	if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
-		log.Errorf("Testlet %s does not exist on this agent", itt.Tr.Testlet)
-		return errors.New("Error installing testrun - testlet doesn't exist on this agent.")
+	var testlet_path string
+
+	// Determine if this is a native testlet
+	isNative, newName := testlets.IsNativeTestlet(itt.Tr.Testlet)
+
+	// If we're running a native testlet, we want testlet_path to simply be the testlet name
+	// (since it is a requirement that the native-Go testlets are in the PATH)
+	// If the testlet is not native, we can get the full path.
+	if isNative {
+		log.Infof("%s is a native testlet - installing testrun.", itt.Tr.Testlet)
+		testlet_path = newName
+	} else {
+		// Generate path to testlet and make sure it exists.
+		testlet_path = fmt.Sprintf("%s/assets/testlets/%s", itt.Config.LocalResources.OptDir, itt.Tr.Testlet)
+		if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
+			log.Errorf("Testlet %s does not exist on this agent", itt.Tr.Testlet)
+			return errors.New("Error installing testrun - testlet doesn't exist on this agent.")
+		}
 	}
 
 	// Run the testlet in check mode to verify that everything is okay to run this test
