@@ -147,9 +147,10 @@ cleanup
 
 startinfra
 
+# If first argument is "integration", start that topology and run tests
 if [ "$1" == "integration" ]
 then
-    sleep 5
+    sleep 10
 
     starttodd 6 /etc/todd/server-int.cfg /etc/todd/agent-int.cfg
 
@@ -159,17 +160,19 @@ then
     exit $?
 fi
 
+# If first argument is "interop", start that demo
 if [ "$1" == "interop" ]
 then
-    sleep 5
+    sleep 10
 
     starttodd 3 /etc/todd/server-interop.cfg /etc/todd/agent-interop.cfg
     exit $?
 fi
 
+# Finally, if something's being passed in, it's probably number of agents, followed by configs.
 if [ -n "$1" ]
 then
-    sleep 5
+    sleep 10
     
     starttodd "$1" "$2" "$3"
 fi

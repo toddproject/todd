@@ -9,6 +9,17 @@ This allows the user to simply "use" this application, and specify which agents 
 
 The testlet is actually run by the ToDD agent, so if there are 3 agents participating in a test, then 3 testlets are running. All logic that performs the test should be contained within the 
 
+Testrun Definition
+------------------
+
+When you want to run a certain testlet, you refer to it by name. There are a number of testlets built in to ToDD and are therefore reserved:
+
+* http
+* bandwidth
+* ping
+
+You can, of course, build your own testlet (provided it follows the standard defined on this page) and refer to it by it's filename.
+
 Check Mode
 ----------
 Each testlet must support a "check mode". This is a way of running a testlet that allows the ToDD agent to know whether or not a test can be performed, without actually running the test.
