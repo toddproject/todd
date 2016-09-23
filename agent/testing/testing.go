@@ -42,22 +42,6 @@ type Testlet interface {
 	Run(string, []string, int) (map[string]string, error)
 }
 
-// NOTE
-//
-// Early efforts to build native-Go testlets involved the embedding of testlet logic into the
-// ToDD agent itself. As a result, it was important to build some reusable infrastructure so that goroutines
-// running testlet code within the agent could be controlled, and that new testlets could benefit from this
-// infrastructure.
-//
-// Since then, the decision was made to keep testlets as their own separate binaries.
-//
-// These testlets are in their own repositories, and they do actually use some of the logic below, just not as meaningfully
-// and comprehensively as they would have if they were baked in to the agent.  The development standard for all "blessed"
-// testlets will still ensure that they use this interface, so that if we decide to bake them into the agent in the future,
-// they'll already conform.
-//
-// (The vast majority of this code was inspired by the database drivers implementation in the stdlib)
-
 type rtfunc func(target string, args []string, timeout int) (map[string]string, error)
 
 type BaseTestlet struct {
