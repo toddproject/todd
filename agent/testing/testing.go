@@ -67,11 +67,11 @@ type BaseTestlet struct {
 func GetTestletPath(testletName, optDir string) (string, error) {
 
 	if _, ok := nativeTestlets[testletName]; ok {
-		log.Infof("%s is a native testlet", testletName)
+		log.Debugf("%s is a native testlet", testletName)
 		return nativeTestlets[testletName], nil
 	} else {
 
-		log.Infof("%s is a custom testlet", testletName)
+		log.Debugf("%s is a custom testlet", testletName)
 
 		// Generate path to testlet and make sure it exists.
 		testletPath := fmt.Sprintf("%s/assets/testlets/%s", optDir, testletName)
