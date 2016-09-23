@@ -82,9 +82,6 @@ func (ett ExecuteTestRunTask) Run() error {
 		}
 	}
 
-	// TODO(mierdin): What about testlets running as servers (i.e. 'iperf -s')? Are we spinning up len(tr.Targets)
-	// number of those?
-
 	// Execute testlets against all targets asynchronously
 	for i := range tr.Targets {
 
@@ -102,11 +99,10 @@ func (ett ExecuteTestRunTask) Run() error {
 			// Attach buffer to command
 			cmd.Stdout = cmdOutput
 
-			// Execute collector
+			// Execute testlet
 			cmd.Start()
 
-			// TODO(mierdin): Why is this a buffered channel? Is this necessary?
-			done := make(chan error, 1)
+			done := make(chan error)
 			go func() {
 				done <- cmd.Wait()
 			}()
