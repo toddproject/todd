@@ -46,6 +46,3 @@ install:
 	if ! [ "etc" -ef "/etc/todd" ]; then mkdir -p /etc/todd && cp -f ./etc/{agent,server}.cfg /etc/todd/; fi
 	mkdir -p /opt/todd/{agent,server}/assets/{factcollectors,testlets}
 	chmod -R 777 /opt/todd
-
-	# If on Linux, enable ping testlet functionality (DEPRECATED in favor of granting socket capabilities on testlets)
-	# sysctl -w net.ipv4.ping_group_range="0 0" || echo "Unable to set kernel parameters to allow ping. Some testlets may not work."
