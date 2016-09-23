@@ -59,12 +59,11 @@ type BaseTestlet struct {
 	RunFunction rtfunc
 }
 
-// IsNativeTestlet polls the list of registered native testlets, and returns
-// true if the referenced name exists. Also returns path to testlet (if native, just it's name)
-// If we're running a native testlet, we want testlet_path to simply be the testlet name
-// (since it is a requirement that the native-Go testlets are in the PATH)
-// If the testlet is not native, we can get the full path.
-// << DOCUMENT RETURNS AND ARGS >>
+// GetTestletPath generates whatever path is needed to reach the given testlet
+// It first determines if the referenced testlet is native or not - if it is native,
+// then only the name needs to be returned (all native testlets must be in the path).
+// If it is a custom testlet, then it will generate the full path to the testlet,
+// ensure it is a valid path, and if so, return that full path back to the caller.
 func GetTestletPath(testletName, optDir string) (string, error) {
 
 	if _, ok := nativeTestlets[testletName]; ok {
