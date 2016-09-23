@@ -47,9 +47,10 @@ func (ett ExecuteTestRunTask) Run() error {
 	var wg sync.WaitGroup
 
 	// Waiting three seconds to ensure all the agents have their tasks before we potentially hammer the network
+	//
 	// TODO(mierdin): This is a temporary measure - in the future, testruns will be executed via time schedule,
 	// making not only this sleep, but also the entire task unnecessary. Testruns will simply be installed, and
-	// executed when the time is right.
+	// executed when the time is right. This is, in part tracked by https://github.com/Mierdin/todd/issues/89
 	time.Sleep(3000 * time.Millisecond)
 
 	// Retrieve test from cache by UUID
