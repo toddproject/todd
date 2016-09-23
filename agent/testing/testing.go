@@ -11,6 +11,14 @@
 
 package testing
 
+import (
+	"errors"
+	"fmt"
+	"os"
+
+	log "github.com/Sirupsen/logrus"
+)
+
 var (
 
 	// This map provides name redirection so that the native testlets can use names that don't
@@ -52,11 +60,27 @@ type BaseTestlet struct {
 }
 
 // IsNativeTestlet polls the list of registered native testlets, and returns
-// true if the referenced name exists
-func IsNativeTestlet(name string) (bool, string) {
-	if _, ok := nativeTestlets[name]; ok {
-		return true, nativeTestlets[name]
+// true if the referenced name exists. Also returns path to testlet (if native, just it's name)
+// If we're running a native testlet, we want testlet_path to simply be the testlet name
+// (since it is a requirement that the native-Go testlets are in the PATH)
+// If the testlet is not native, we can get the full path.
+// << DOCUMENT RETURNS AND ARGS >>
+func GetTestletPath(testletName, optDir string) (string, error) {
+
+	if _, ok := nativeTestlets[testletName]; ok {
+		log.Infof("%s is a native testlet", testletName)
+		return nativeTestlets[testletName], nil
 	} else {
-		return false, ""
+
+		log.Infof("%s is a custom testlet", testletName)
+
+		// Generate path to testlet and make sure it exists.
+		testletPath := fmt.Sprintf("%s/assets/testlets/%s", optDir, testletName)
+		if _, err := os.Stat(testletPath); os.IsNotExist(err) {
+			log.Errorf("Testlet %s does not exist on this agent", testletName)
+			return "", errors.New("Error installing testrun - testlet doesn't exist on this agent.")
+		}
+
+		return testletPath, nil
 	}
 }
