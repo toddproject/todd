@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 	"sync"
@@ -66,21 +65,9 @@ func (ett ExecuteTestRunTask) Run() error {
 	// Specify size of wait group equal to number of targets
 	wg.Add(len(tr.Targets))
 
-	var testlet_path string
-	isNative, newTestletName := testing.IsNativeTestlet(tr.Testlet)
-
-	// If we're running a native testlet, we want testlet_path to simply be the testlet name
-	// (since it is a requirement that the native-Go testlets are in the PATH)
-	// If the testlet is not native, we can get the full path.
-	if isNative {
-		testlet_path = newTestletName
-	} else {
-		// Generate path to testlet and make sure it exists.
-		testlet_path = fmt.Sprintf("%s/assets/testlets/%s", ett.Config.LocalResources.OptDir, tr.Testlet)
-		if _, err := os.Stat(testlet_path); os.IsNotExist(err) {
-			log.Errorf("Testlet %s does not exist on this agent", testlet_path)
-			return errors.New("Error executing testrun - testlet doesn't exist on this agent.")
-		}
+	testletPath, err := testing.GetTestletPath(tr.Testlet, ett.Config.LocalResources.OptDir)
+	if err != nil {
+		return err
 	}
 
 	// Execute testlets against all targets asynchronously
@@ -92,8 +79,8 @@ func (ett ExecuteTestRunTask) Run() error {
 
 			defer wg.Done()
 
-			log.Debugf("Full testlet command and args: '%s %s %s'", testlet_path, thisTarget, tr.Args)
-			cmd := exec.Command(testlet_path, thisTarget, tr.Args)
+			log.Debugf("Full testlet command and args: '%s %s %s'", testletPath, thisTarget, tr.Args)
+			cmd := exec.Command(testletPath, thisTarget, tr.Args)
 
 			// Stdout buffer
 			cmdOutput := &bytes.Buffer{}
@@ -114,16 +101,16 @@ func (ett ExecuteTestRunTask) Run() error {
 			select {
 			case <-time.After(time.Duration(ett.TimeLimit) * time.Second):
 				if err := cmd.Process.Kill(); err != nil {
-					log.Errorf("Failed to kill %s after timeout: %s", testlet_path, err)
+					log.Errorf("Failed to kill %s after timeout: %s", testletPath, err)
 				} else {
-					log.Debug("Successfully killed ", testlet_path)
+					log.Debug("Successfully killed ", testletPath)
 				}
 			case err := <-done:
 				if err != nil {
-					log.Errorf("Testlet %s completed with error '%s'", testlet_path, err)
+					log.Errorf("Testlet %s completed with error '%s'", testletPath, err)
 					gatheredData[thisTarget] = "error"
 				} else {
-					log.Debugf("Testlet %s completed without error", testlet_path)
+					log.Debugf("Testlet %s completed without error", testletPath)
 				}
 			}
 
