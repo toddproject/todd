@@ -146,7 +146,7 @@ func watchForFinishedTestRuns(cfg config.Config) error {
 
 			log.Debug("Found ripe testrun: ", testUuid)
 
-			var utdr = responses.UploadTestDataResponse{
+			utdr := responses.UploadTestDataResponse{
 				TestUuid: testUuid,
 				TestData: testData,
 			}

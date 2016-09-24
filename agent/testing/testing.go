@@ -38,25 +38,7 @@ type Testlet interface {
 
 	// Run is the "workflow" function for a testlet. All testing takes place here
 	// (or in a function called within)
-	//
-	// Params are
-	// target (string)
-	// args ([]string)
-	// timeLimit (int in seconds)
-	//
-	// Returns:
-	// metrics (map[string]string)
-	// (name of metric is key, value is metric value)
-	Run(string, []string, int) (map[string]string, error)
-}
-
-type rtfunc func(target string, args []string, timeout int) (map[string]string, error)
-
-type BaseTestlet struct {
-
-	// rtfunc is a type that will store our RunTestlet function. It is the responsibility
-	// of the "child" testlet to set this value upon creation
-	RunFunction rtfunc
+	Run(target string, args []string, timeLimit int) (metrics map[string]string, err error)
 }
 
 // GetTestletPath generates whatever path is needed to reach the given testlet
@@ -69,17 +51,17 @@ func GetTestletPath(testletName, optDir string) (string, error) {
 	if _, ok := nativeTestlets[testletName]; ok {
 		log.Debugf("%s is a native testlet", testletName)
 		return nativeTestlets[testletName], nil
-	} else {
-
-		log.Debugf("%s is a custom testlet", testletName)
-
-		// Generate path to testlet and make sure it exists.
-		testletPath := fmt.Sprintf("%s/assets/testlets/%s", optDir, testletName)
-		if _, err := os.Stat(testletPath); os.IsNotExist(err) {
-			log.Errorf("Testlet %s does not exist on this agent", testletName)
-			return "", errors.New("Error installing testrun - testlet doesn't exist on this agent.")
-		}
-
-		return testletPath, nil
 	}
+
+	log.Debugf("%s is a custom testlet", testletName)
+
+	// Generate path to testlet and make sure it exists.
+	testletPath := fmt.Sprintf("%s/assets/testlets/%s", optDir, testletName)
+	if _, err := os.Stat(testletPath); err != nil || os.IsNotExist(err) {
+		log.Errorf("Testlet %q does not exist on this agent", testletName)
+		return "", errors.New("Error installing testrun - testlet doesn't exist on this agent.")
+	}
+
+	return testletPath, nil
+
 }
