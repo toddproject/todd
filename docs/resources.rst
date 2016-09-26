@@ -3,7 +3,9 @@ Additional Resources for ToDD
 
 Collaboration
 ----------
-ToDD has a `mailing list <https://groups.google.com/forum/#!forum/todd-dev/>`_, for all matters related to development, or questions about getting ToDD running on your own systems. Please feel free to join and send a message if you have any questions! We will be as helpful as possible.
+The most active platform at the moment is the #todd channel in the "Network to Code" slack team. This team is free and open to join - just head over to `networktocode.slack.com <https://networktocode.slack.com/>`_ to sign up, and look for the #todd channel once in.
+
+ToDD also has a `mailing list <https://groups.google.com/forum/#!forum/todd-dev/>`_, for all matters related to development, or questions about getting ToDD running on your own systems. Please feel free to join and send a message if you have any questions! We will be as helpful as possible.
 
 Blogs
 ----------
@@ -16,7 +18,7 @@ ToDD was first released at the Devops Networking Forum in Santa Clara. That talk
 
 .. raw:: html
 
-    <div style="text-align:center;"><iframe width="560" height="315" src="https://www.youtube.com/watch?v=ZIykHS5RoNM" frameborder="0" allowfullscreen></iframe></div>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/ZIykHS5RoNM" frameborder="0" allowfullscreen></iframe>
 
 I also recorded a video that covers some of the high-level concepts and design of ToDD:
 

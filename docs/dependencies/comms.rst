@@ -1,9 +1,9 @@
-ToDD Agent Orchestration (Comms)
+Agent Communication (Comms)
 ================================
 
 In ToDD, we use a simple abstraction for communicating between the ToDD server and the agents, and this is implemented in the "comms" package. This abstraction allows ToDD to easily work with external messaging services like RabbitMQ, or Apache Kafka, etc - in order to facilitate distributed communications. As a result, ToDD agents do not actually speak directly with the ToDD server - they communicate indirectly through this third-party entitity.
 
-.. image:: images/comms.png
+.. image:: ../images/comms.png
 
 As shown in `#18 <https://github.com/Mierdin/todd/issues/18>`_, this paradigm wasn't very well documented until now. ToDD still requires that some external entity like RabbitMQ is set up.
 

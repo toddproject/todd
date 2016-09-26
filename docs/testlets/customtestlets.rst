@@ -5,7 +5,7 @@ ToDD was originally built with no testlets built-in to the agent. All tests were
 
 This allows the user to use any testing application (provided it is available on the system on which the ToDD agent is running, and specify which agents run this application. All of the complicated stuff with respect to sending arguments to the underlying testing application as well as parsing the output, is performed inside the testlet.
 
-.. image:: images/testlet.png
+.. image:: ../images/testlet.png
 
 The testlet is actually run by the ToDD agent, so if there are 3 agents participating in a test, then 3 testlets are running. All logic that performs the test should be contained within the 
 
