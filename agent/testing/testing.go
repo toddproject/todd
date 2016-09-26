@@ -57,9 +57,9 @@ func GetTestletPath(testletName, optDir string) (string, error) {
 
 	// Generate path to testlet and make sure it exists.
 	testletPath := fmt.Sprintf("%s/assets/testlets/%s", optDir, testletName)
-	if _, err := os.Stat(testletPath); err != nil || os.IsNotExist(err) {
-		log.Errorf("Testlet %q does not exist on this agent", testletName)
-		return "", errors.New("Error installing testrun - testlet doesn't exist on this agent.")
+	if _, err := os.Stat(testletPath); err != nil {
+		log.Errorf("Problem accessing testlet %q  on this agent", testletName)
+		return "", errors.New("Error installing testrun - problem accessing testrun on agent")
 	}
 
 	return testletPath, nil
