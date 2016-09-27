@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package cache
@@ -17,7 +17,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	_ "github.com/mattn/go-sqlite3" // This looks strange but is necessary - the sqlite package is used indirectly by database/sql
 
-	"github.com/Mierdin/todd/agent/defs"
+	"github.com/toddproject/todd/agent/defs"
 )
 
 // InsertTestRun places a new test run into the agent cache

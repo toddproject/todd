@@ -5,7 +5,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package tsdb
@@ -13,8 +13,9 @@ package tsdb
 import (
 	"os"
 
-	"github.com/Mierdin/todd/config"
 	log "github.com/Sirupsen/logrus"
+
+	"github.com/toddproject/todd/config"
 )
 
 // TSDBPackage represents all of the behavior that a ToDD TSDB plugin must support

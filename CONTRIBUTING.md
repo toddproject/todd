@@ -14,4 +14,4 @@ Please refer to the .travis.yml file in the root of the repository in order to s
 
 Also, and this is important - the smaller and more single-purpose your PRs are, the better. I am happy to review just about any PR that passes the build and seems to be a good idea, but I do have a day job and if you want a quick turnaround, keep them small!
 
-If you're wondering what there is to work on, I try to keep the [issues for this project](https://github.com/Mierdin/todd/issues) populated with any known issues, so feel free to peruse that list.
+If you're wondering what there is to work on, I try to keep the [issues for this project](https://github.com/toddproject/todd/issues) populated with any known issues, so feel free to peruse that list.

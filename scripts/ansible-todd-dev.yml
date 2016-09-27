@@ -9,7 +9,7 @@
     gotarball: 'go{{ gover }}.linux-amd64.tar.gz'
     gourl: 'https://storage.googleapis.com/golang'
     gover: '1.6.2'  #Change this variable to update to a new version of Go
-    todd_dir: '/home/vagrant/go/src/github.com/Mierdin/todd'
+    todd_dir: '/home/vagrant/go/src/github.com/toddproject/todd'
     todd_make_configureenv_check_file: '/home/vagrant/.make_configureenv_complete'
   tasks:
 
@@ -94,7 +94,7 @@
   hosts: all
   vars:
     todd_compile_check_file: '/home/vagrant/.todd_compile_complete'
-    todd_dir: '/home/vagrant/go/src/github.com/Mierdin/todd'
+    todd_dir: '/home/vagrant/go/src/github.com/toddproject/todd'
   tasks:
 
     - name: Set GOPATH for Vagrant user profile

@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package facts
@@ -16,8 +16,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/Mierdin/todd/config"
 	log "github.com/Sirupsen/logrus"
+	"github.com/toddproject/todd/config"
 )
 
 // GetFacts is responsible for gathering facts on a system (runs on the agent).

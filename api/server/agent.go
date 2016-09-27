@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package api
@@ -14,8 +14,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Mierdin/todd/agent/defs"
 	log "github.com/Sirupsen/logrus"
+	"github.com/toddproject/todd/agent/defs"
 )
 
 func (tapi ToDDApi) Agent(w http.ResponseWriter, r *http.Request) {

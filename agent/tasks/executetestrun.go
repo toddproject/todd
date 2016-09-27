@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package tasks
@@ -19,9 +19,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/Mierdin/todd/agent/cache"
-	"github.com/Mierdin/todd/agent/testing"
-	"github.com/Mierdin/todd/config"
+	"github.com/toddproject/todd/agent/cache"
+	"github.com/toddproject/todd/agent/testing"
+	"github.com/toddproject/todd/config"
 )
 
 // ExecuteTestRunTask defines this particular task.
@@ -49,7 +49,7 @@ func (ett ExecuteTestRunTask) Run() error {
 	//
 	// TODO(mierdin): This is a temporary measure - in the future, testruns will be executed via time schedule,
 	// making not only this sleep, but also the entire task unnecessary. Testruns will simply be installed, and
-	// executed when the time is right. This is, in part tracked by https://github.com/Mierdin/todd/issues/89
+	// executed when the time is right. This is, in part tracked by https://github.com/toddproject/todd/issues/89
 	time.Sleep(3000 * time.Millisecond)
 
 	// Retrieve test from cache by UUID

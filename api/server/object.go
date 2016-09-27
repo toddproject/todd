@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package api
@@ -17,7 +17,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/Mierdin/todd/server/objects"
+	"github.com/toddproject/todd/server/objects"
 )
 
 // ListObjects will query the database layer for a slice of objects based on the parameters provided in the URL.

@@ -5,7 +5,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package db
@@ -13,9 +13,9 @@ package db
 import (
 	"errors"
 
-	"github.com/Mierdin/todd/agent/defs"
-	"github.com/Mierdin/todd/config"
-	"github.com/Mierdin/todd/server/objects"
+	"github.com/toddproject/todd/agent/defs"
+	"github.com/toddproject/todd/config"
+	"github.com/toddproject/todd/server/objects"
 )
 
 var (

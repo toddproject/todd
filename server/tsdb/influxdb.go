@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package tsdb
@@ -16,7 +16,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	influx "github.com/influxdata/influxdb/client/v2"
 
-	"github.com/Mierdin/todd/config"
+	"github.com/toddproject/todd/config"
 )
 
 // newInfluxDB is a factory function that produces a new instance of influxDB with the configuration

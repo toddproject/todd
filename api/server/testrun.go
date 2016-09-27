@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package api
@@ -16,9 +16,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/Mierdin/todd/db"
-	"github.com/Mierdin/todd/server/objects"
-	"github.com/Mierdin/todd/server/testrun"
+	"github.com/toddproject/todd/db"
+	"github.com/toddproject/todd/server/objects"
+	"github.com/toddproject/todd/server/testrun"
 )
 
 // Run will activate an existing testrun

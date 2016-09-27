@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package api
@@ -19,7 +19,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/Mierdin/todd/server/objects"
+	"github.com/toddproject/todd/server/objects"
 )
 
 // Create is responsible for pushing a ToDD object to the server for eventual storage in whatever database is being used

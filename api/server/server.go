@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package api
@@ -12,10 +12,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Mierdin/todd/db"
 	log "github.com/Sirupsen/logrus"
+	"github.com/toddproject/todd/db"
 
-	"github.com/Mierdin/todd/config"
+	"github.com/toddproject/todd/config"
 )
 
 type ToDDApi struct {

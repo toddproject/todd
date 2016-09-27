@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package main
@@ -14,12 +14,12 @@ import (
 	"os"
 	"time"
 
-	toddapi "github.com/Mierdin/todd/api/server"
-	"github.com/Mierdin/todd/comms"
-	"github.com/Mierdin/todd/config"
-	"github.com/Mierdin/todd/db"
-	"github.com/Mierdin/todd/server/grouping"
 	log "github.com/Sirupsen/logrus"
+	toddapi "github.com/toddproject/todd/api/server"
+	"github.com/toddproject/todd/comms"
+	"github.com/toddproject/todd/config"
+	"github.com/toddproject/todd/db"
+	"github.com/toddproject/todd/server/grouping"
 )
 
 // Command-line Arguments

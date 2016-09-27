@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package main
@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"os"
 
-	capi "github.com/Mierdin/todd/api/client"
 	cli "github.com/codegangsta/cli"
+	capi "github.com/toddproject/todd/api/client"
 )
 
 func main() {

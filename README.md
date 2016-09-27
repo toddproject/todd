@@ -2,7 +2,7 @@ ToDD
 ====
 [![Build Status](https://travis-ci.org/Mierdin/todd.svg?branch=master)](https://travis-ci.org/Mierdin/todd)
 [![Documentation Status](https://readthedocs.org/projects/todd/badge/?version=latest)](http://todd.readthedocs.org/en/latest/?badge=latest)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mierdin/todd)](https://goreportcard.com/report/github.com/mierdin/todd)
+[![Go Report Card](https://goreportcard.com/badge/github.com/toddproject/todd)](https://goreportcard.com/report/github.com/toddproject/todd)
 
 ToDD stands for "Testing on Demand: Distributed!". ToDD is an extensible framework for providing natively distributed testing on demand.
 
@@ -36,7 +36,7 @@ The [ToDD mailing list](https://groups.google.com/forum/#!forum/todd-dev) is als
 
 The best way to get ToDD running is by leveraging the Vagrantfile provided in this repository. This Vagrantfile comes with an Ansible playbook, so the simplest way to get this environment kicked off is:
 
-    git clone git@github.com/Mierdin/todd.git
+    git clone git@github.com/toddproject/todd.git
     cd todd/
     vagrant up
 
@@ -45,7 +45,7 @@ Wait for the Ansible playbook to finish, and when it's done, you will have a VM 
 To install, SSH into the VM and use the provided Makefile:
 
     vagrant ssh
-    cd ~/go/src/github.com/Mierdin/todd
+    cd ~/go/src/github.com/toddproject/todd
     sudo -E GOPATH=/home/vagrant/go PATH=$PATH:/home/vagrant/go make install
     todd --help
 
@@ -73,7 +73,7 @@ A Docker container for ToDD [is available from Docker Hub](https://hub.docker.co
 
 # Contributing
 
-If you want to contribute some code to ToDD, please review [CONTRIBUTING.md](https://github.com/Mierdin/todd/blob/master/CONTRIBUTING.md) first.
+If you want to contribute some code to ToDD, please review [CONTRIBUTING.md](https://github.com/toddproject/todd/blob/master/CONTRIBUTING.md) first.
 
 # WARNING
 

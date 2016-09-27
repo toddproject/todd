@@ -16,8 +16,8 @@ RUN apt-get update \
  && apt-get install -y vim curl iperf git
 
 # Install ToDD
-COPY . /go/src/github.com/Mierdin/todd
+COPY . /go/src/github.com/toddproject/todd
 
-RUN cd /go/src/github.com/Mierdin/todd && GO15VENDOREXPERIMENT=1 make && make install
+RUN cd /go/src/github.com/toddproject/todd && GO15VENDOREXPERIMENT=1 make && make install
 
-RUN cp /go/src/github.com/Mierdin/todd/etc/* /etc/todd
+RUN cp /go/src/github.com/toddproject/todd/etc/* /etc/todd

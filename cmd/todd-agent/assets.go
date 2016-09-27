@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package main
@@ -13,10 +13,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Mierdin/todd/config"
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/Mierdin/todd/hostresources"
+	"github.com/toddproject/todd/config"
+	"github.com/toddproject/todd/hostresources"
 )
 
 // GetLocalAssets gathers all currently installed assets, and generates a map of their names and hashes.

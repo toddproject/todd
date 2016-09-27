@@ -3,7 +3,7 @@
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
-	https://github.com/Mierdin/todd/blob/master/LICENSE
+	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
 package comms
@@ -15,15 +15,16 @@ import (
 	"os"
 	"time"
 
-	"github.com/Mierdin/todd/agent/cache"
-	"github.com/Mierdin/todd/agent/defs"
-	"github.com/Mierdin/todd/agent/responses"
-	"github.com/Mierdin/todd/agent/tasks"
-	"github.com/Mierdin/todd/config"
-	"github.com/Mierdin/todd/db"
-	"github.com/Mierdin/todd/hostresources"
 	log "github.com/Sirupsen/logrus"
 	"github.com/streadway/amqp"
+
+	"github.com/toddproject/todd/agent/cache"
+	"github.com/toddproject/todd/agent/defs"
+	"github.com/toddproject/todd/agent/responses"
+	"github.com/toddproject/todd/agent/tasks"
+	"github.com/toddproject/todd/config"
+	"github.com/toddproject/todd/db"
+	"github.com/toddproject/todd/hostresources"
 )
 
 const (
