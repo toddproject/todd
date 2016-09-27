@@ -1,24 +1,25 @@
-Custom Testlets
+User-Defined Testlets
 ================================
 
-ToDD was originally built with no testlets built-in to the agent. All tests were performed using external executable files (i.e. scripts, binaries) that accept a standard set of input, run a test application, and provide a standard set of output containing metrics from that test. Though ToDD has since adopted a number of testlets to be built-in to the agent for simplicity, this functionality still remains, so you can extend ToDD to run whatever types of tests you wish.
+One of the most important original design principles for ToDD was the ability for users to easily define their own testing. Indeed, this has become one of ToDD's biggest advantages over alternative software. 
 
-This allows the user to use any testing application (provided it is available on the system on which the ToDD agent is running, and specify which agents run this application. All of the complicated stuff with respect to sending arguments to the underlying testing application as well as parsing the output, is performed inside the testlet.
+The idea is to allow the user to use any testing application (provided it is available on the system on which the ToDD agent is running. All of the complicated stuff with respect to sending arguments to the underlying testing application as well as parsing the output, is performed inside the testlet.
 
 .. image:: ../images/testlet.png
 
-The testlet is actually run by the ToDD agent, so if there are 3 agents participating in a test, then 3 testlets are running. All logic that performs the test should be contained within the 
+The testlet is actually run by the ToDD agent, so if there are 3 agents participating in a test, then 3 testlets are running. All logic that performs the test should be contained within the testlet. This is possible because of "the testlet standard", which is a standardized set of input and output that each testlet must support in order to be run by ToDD. This standard is documented in the sections below.
 
-Testrun Definition
-------------------
+Referring to a Testlet
+----------------------
 
-When you want to run a certain testlet, you refer to it by name. There are a number of testlets built-in to ToDD and are therefore reserved:
+When you want to run a certain testlet, you refer to it by name. There are a number of `testlets built-in to ToDD <nativetestlets/nativetestlets.html>`_ and are therefore reserved:
 
 * http
 * bandwidth
 * ping
+* portknock
 
-You can, of course, build your own testlet (provided it follows the standard defined on this page) and refer to it by it's filename.
+Provided it has a unique name, and that it is executable (pre-compiled binary, Python script, bash script, etc.) then it can function as a testlet. Early testlets were actually just bash scripts that wrapped around existing applications like iperf or ping, and simply parsed their output.
 
 Check Mode
 ----------

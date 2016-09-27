@@ -12,10 +12,11 @@ ToDD stands for "Testing on Demand: Distributed!". ToDD is an extensible framewo
 
 Traditionally, the tooling used by network engineers to confirm continued network operation after any kind of change to the network is fairly limited. After a change, a network engineer may run "ping" or "traceroute" from their machine, or perhaps call some application owners to ensure that their apps are still working. Unfortunately, there is a very big difference in network activity between a 3AM change window and peak user activity during the day.
 
-What's needed is a way to:
+ToDD addresses gaps in today's testing software in three ways:
 
-- Describe a specific application that uses the network, in a simple text format
-- Artificially produce network traffic that matches this description, at a comparable scale to real-world network activity
+- Enables real-world traffic distribution for tests using very simple grouping primitives
+- Provides a totally open and extensible mechanism for defining tests
+- Exposes testing data in a totally open way, easily allowing for 3rd party software to analyze and visualize
 
 ToDD is a framework through which you can deploy simple test-oriented applications in a distributed manner. With ToDD, you distribute agents around your infrastructure in any place where you feel additional "testing power" is warranted. Then, these agents can be leveraged to mimic real-world network utilization by actually running those same applications at a large scale.
 

@@ -7,7 +7,7 @@ ToDD Documentation
 ================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
 
    intro.rst
    design.rst
@@ -17,10 +17,3 @@ ToDD Documentation
    testlets/testlets.rst
    resources.rst
    roadmap.rst
-
-This is ToDD's documentation. The docs are a work in progress, but check back soon! I'll be updating this heavily over the next few days and weeks.
-
-In the meantime, check out my `blog post on ToDD <http://keepingitclassless.net/2016/03/test-driven-network-automation/>`_, as it's probably the best introduction to using ToDD for the time being.
-
-The mailing list for ToDD is `available here <https://groups.google.com/forum/#!forum/todd-dev>`_.
-

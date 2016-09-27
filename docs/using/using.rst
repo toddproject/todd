@@ -6,5 +6,3 @@ Using ToDD
 
    cli.rst
    objects.rst
-
-This guide will show you how to use ToDD
