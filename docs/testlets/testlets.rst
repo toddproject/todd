@@ -2,7 +2,7 @@ Testlets
 ================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    nativetestlets/nativetestlets.rst
    usertestlets.rst
@@ -11,10 +11,10 @@ Testing applications are called "testlets" in ToDD. This is a handy way of refer
 
 There are a number of testlets that have been developed as part of the ToDD project (referred to as "native testlets"):
 
-* `http <https://github.com/toddproject/todd-nativetestlet-http>`_
-* `bandwidth <https://github.com/toddproject/todd-nativetestlet-bandwidth>`_
-* `ping <https://github.com/toddproject/todd-nativetestlet-ping>`_
-* `portknock <https://github.com/toddproject/todd-nativetestlet-portknock>`_
+* `http <nativetestlets/http.html>`_
+* `bandwidth <nativetestlets/bandwidth.html>`_
+* `ping <nativetestlets/ping.html>`_
+* `portknock <nativetestlets/portknock.html>`_
 
 They run as separate binaries, and are executed in the same way that custom testlets might be executed, if you were to provide one. If you install ToDD using the provided instructions, these are also installed on the system.
 

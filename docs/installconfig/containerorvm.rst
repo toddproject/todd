@@ -19,13 +19,13 @@ If you instead wish to run ToDD inside a Docker container, you can pull the curr
        v0.1.0
     ......
 
-The binaries below are distributed inside this container and can be run as commands on top of the "docker run" command:
+All three ToDD binaries (as well as native testlets) are distributed inside this container and can be run as commands on top of the "docker run" command:
 
 - ``todd`` - the CLI client for ToDD
 - ``todd-server`` - the ToDD server binary
 - ``todd-agent`` - the ToDD agent binary
 
-A Dockerfile for running any ToDD component (server/agent/client) is provided in the repository if you wish to build the image yourself. This Dockerfile is what's used to automatically build the Docker image within Dockerhub.
+A Dockerfile is provided in the repository if you wish to build the image yourself. The Docker image repository is configured to automatically build the image from this Dockerfile whenever changes are pushed to the `master` branch in Github, so you always know you're pulling down the latest and greatest.
 
 Vagrant
 -------
