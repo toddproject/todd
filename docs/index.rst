@@ -7,7 +7,7 @@ ToDD Documentation
 ================================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    intro.rst
    design.rst
