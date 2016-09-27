@@ -1,4 +1,4 @@
-Using ToDD
+User Guide
 ================================
 
 .. toctree::

@@ -1,4 +1,4 @@
-High-Level Design of ToDD
+High-Level Design
 ================================
 
 The High-Level Design of ToDD is fairly simple. ToDD is composed of three components:

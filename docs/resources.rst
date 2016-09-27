@@ -1,4 +1,4 @@
-Additional Resources for ToDD
+Additional Resources
 ================================
 
 Collaboration

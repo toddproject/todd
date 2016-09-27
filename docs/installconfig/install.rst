@@ -1,4 +1,4 @@
-Installing and/or Running ToDD
+Install and Run
 ================================
 
 .. toctree::
