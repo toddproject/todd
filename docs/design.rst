@@ -14,7 +14,7 @@ A general idea of how these components is depicted below:
 Some notes about this:
 
 * All database integrations are at the server level - no agent communicates with database
-* Agents _do not_ communicate directly with server. This is done through some kind of message queue (i.e. RabbitMQ) using ToDD's "comms" abstraction.
+* Agents **do not** communicate directly with server. This is done through some kind of message queue (i.e. RabbitMQ) using ToDD's "comms" abstraction.
 * Server has a REST API built-in. No other software needed (see section "ToDD Server" for more)
 
 The following sections elaborate on each component in greater detail.
