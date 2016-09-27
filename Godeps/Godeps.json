@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/Mierdin/todd",
+	"ImportPath": "github.com/toddproject/todd",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v63",
 	"Packages": [

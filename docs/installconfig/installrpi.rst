@@ -57,8 +57,8 @@ From now on, you can follow the canonical `install instructions <install.html>`_
 
 .. code-block:: text
 
-    go get -d github.com/Mierdin/todd
-    cd $GOPATH/src/github.com/Mierdin/todd
+    go get -d github.com/toddproject/todd
+    cd $GOPATH/src/github.com/toddproject/todd
 
 Next, use make to compile ToDD. Be patient, the first step can take a while on the Raspberry Pi. (On the RPi3 this can be up to 15 mins!)
 

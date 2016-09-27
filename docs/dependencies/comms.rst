@@ -5,10 +5,10 @@ In ToDD, we use a simple abstraction for communicating between the ToDD server a
 
 .. image:: ../images/comms.png
 
-As shown in `#18 <https://github.com/Mierdin/todd/issues/18>`_, this paradigm wasn't very well documented until now. ToDD still requires that some external entity like RabbitMQ is set up.
+As shown in `#18 <https://github.com/toddproject/todd/issues/18>`_, this paradigm wasn't very well documented until now. ToDD still requires that some external entity like RabbitMQ is set up.
 
 If you have no experience with doing this, please refer to 
-`start-containers.sh <https://github.com/Mierdin/todd/blob/master/scripts/start-containers.sh#L44>`_ - this starts some docker containers running these services with reasonable defaults - suitable for getting started with ToDD.
+`start-containers.sh <https://github.com/toddproject/todd/blob/master/scripts/start-containers.sh#L44>`_ - this starts some docker containers running these services with reasonable defaults - suitable for getting started with ToDD.
 
 Comms
 -----
