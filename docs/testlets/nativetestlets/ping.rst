@@ -5,8 +5,27 @@ ping
 
 The ``ping`` testlet provides basic ICMP echo tests. It reports on things like latency, and packet loss.
 
-Linux Sockets
--------------
+Input
+-----
+
+* The ``-c`` argument is used to indicate how many ICMP echos should be sent. For instance, ``toddping <target> -c 5`` will send 5 echo requests. If this argument is omitted, the testlet will default to 3 (note that all metrics are averaged over the number of requests)
+* The ``-t`` argument is used to indicate the timeout value for a single request (in seconds). For instance, ``toddping <target> -t 1`` will set the timeout to 1 second. If the argument is omitted, this value will default to 3 seconds.
+
+Output
+------
+
+Here is a sample output from the ping testlet:
+
+    {
+        "avg_latency_ms": "27.007",
+        "packet_loss_percentage": "0"
+    }
+
+* avg_latency_ms: This is a float value indicating the average latency for all responses
+* packet_loss_percentage: a float value between 0 and 1 indicating the packet loss for the entire test
+
+Special Considerations
+----------------------
 
 On Linux, the ability to leverage ICMP sockets in software usually requires special permissions. The easiest answer is to run such software as root, or with equivalent permissions.
 

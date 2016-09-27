@@ -21,6 +21,10 @@ When you want to run a certain testlet, you refer to it by name. There are a num
 
 Provided it has a unique name, and that it is executable (pre-compiled binary, Python script, bash script, etc.) then it can function as a testlet. Early testlets were actually just bash scripts that wrapped around existing applications like iperf or ping, and simply parsed their output.
 
+.. NOTE::
+    All native testlets maintain their own documentation. Please view the links at the top of <nativetestlets/nativetestlets.html>`_ for more information about these testlets, such as what arguments they require, and a sample of their output.
+
+
 Check Mode
 ----------
 Each testlet must support a "check mode". This is sort of a "pre-test" check to ensure the testlet can be run. When running in "check mode", a testlet should test it's own ability to run a "real" test, such as sending traffic to localhost to ensure it can use the network stack.
