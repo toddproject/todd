@@ -1,7 +1,7 @@
 Installing on Raspberry Pi
 ================================
 
-.. image:: images/rpi.jpeg
+.. image:: ../images/rpi.jpeg
 
 .. IMPORTANT::
    These instructions were tested on several Raspberry Pi 3 (Model B). In theory, these instructions should work for other models, but may require some minor modifications.

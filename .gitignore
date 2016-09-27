@@ -13,3 +13,5 @@ client/repeattest.sh
 *.out
 *.DS_Store*
 agent/testing/downloaded_testlets/
+docs/local/
+*pip-selfcheck.json

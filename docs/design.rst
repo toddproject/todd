@@ -1,20 +1,28 @@
-ToDD - High-Level Design
+High-Level Design of ToDD
 ================================
 
-The High-Level Design of ToDD is fairly simple:
+The High-Level Design of ToDD is fairly simple. ToDD is composed of three components:
+
+* Server
+* Agent
+* Client
+
+A general idea of how these components is depicted below:
 
 .. image:: images/todd-hld.png
 
 Some notes about this:
 
-* All database integrations are at the server level
-* Agents communicate with server via "comms" abstraction (currently RMQ is supported)
-* Server provides REST API to either the pre-packaged "todd" client tool, or to 3rd party software
+* All database integrations are at the server level - no agent communicates with database
+* Agents **do not** communicate directly with server. This is done through some kind of message queue (i.e. RabbitMQ) using ToDD's "comms" abstraction.
+* Server has a REST API built-in. No other software needed (see section "ToDD Server" for more)
+
+The following sections elaborate on each component in greater detail.
 
 ToDD Server
 -----------
 
-The ToDD Server has a few particular noteworth attributes:
+The ToDD Server has a few particular noteworthy attributes:
 
 * Orchestrates test runs between groups of agents (not an endpoint for any testing)
 * Manages agent registration and remediation
@@ -32,3 +40,12 @@ Here are some specific notes on the agents.
 * Provides facts about operating environment back to server
 * Receives and executes testrun instructions from server
 * Variety of form factors (baremetal, VM, container, RasPi, network switch)
+
+ToDD Client
+-----------
+
+The ToDD client is provided via the "todd" shell command. Several subcommands are available here, such as "todd agents" to print the list of currently registered agents.
+
+* Manages installed ToDD objects (group and testrun definitions, etc)
+* Queries state of ToDD infrastructure ("todd agents", "todd groups", etc.)
+* Executes testruns ("todd run ...")
