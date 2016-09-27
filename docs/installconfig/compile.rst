@@ -17,7 +17,11 @@ First, ``go get`` the ToDD source. As mentioned at the beginning of this documen
 
 .. code-block:: text
 
+<<<<<<< HEAD
     go get -d github.com/toddproject/todd
+=======
+    go get -d github.com/Mierdin/todd
+>>>>>>> master
 
 .. NOTE:: 
 
@@ -27,7 +31,11 @@ Navigate to the directory where Go would have downloaded ToDD. As an example:
 
 .. code-block:: text
 
+<<<<<<< HEAD
     cd $GOPATH/src/github.com/toddproject/todd
+=======
+    cd $GOPATH/src/github.com/Mierdin/todd
+>>>>>>> master
 
 Finally, compile and install the binaries:
 

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 Installing and/or Running ToDD
+=======
+Install and Run
+>>>>>>> master
 ================================
 
 .. toctree::
