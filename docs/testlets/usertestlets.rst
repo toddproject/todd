@@ -3,11 +3,7 @@ User-Defined Testlets
 
 One of the most important original design principles for ToDD was the ability for users to easily define their own testing. Indeed, this has become one of ToDD's biggest advantages over other testing solutions, both open-source and commercial.
 
-The idea is to allow the user to use any testing application (provided it is available on the system on which the ToDD agent is running. All of the complicated stuff with respect to sending arguments to the underlying testing application as well as parsing the output, is performed inside the testlet.
-
-.. image:: ../images/testlet.png
-
-The testlet is actually run by the ToDD agent, so if there are 3 agents participating in a test, then 3 testlets are running. All logic that performs the test should be contained within the testlet. This is possible because of "the testlet standard", which is a standardized set of input and output that each testlet must support in order to be run by ToDD. This standard is documented in the sections below.
+The idea is to allow the user to use any testing application (provided it is available on the system on which the ToDD agent is running.  If the user writes a script to wrap around an existing application, the testlet should handle or pass along the input/arguments as well as parse any output from the underlying application. Naturally, a testlet can perform tests itself, so the user can also write a totally self-contained testing program, provided it follows the testlet standard, which is documented below.
 
 Referring to a Testlet
 ----------------------
@@ -22,7 +18,7 @@ When you want to run a certain testlet, you refer to it by name. There are a num
 Provided it has a unique name, and that it is executable (pre-compiled binary, Python script, bash script, etc.) then it can function as a testlet. Early testlets were actually just bash scripts that wrapped around existing applications like iperf or ping, and simply parsed their output.
 
 .. NOTE::
-    All native testlets maintain their own documentation. Please view the links at the top of <nativetestlets/nativetestlets.html>`_ for more information about these testlets, such as what arguments they require, and a sample of their output.
+    All native testlets maintain their own documentation. Please view the links at the top of `Native Testlets <nativetestlets/nativetestlets.html>`_ for more information about these testlets, such as what arguments they require, and a sample of their output.
 
 
 Check Mode
