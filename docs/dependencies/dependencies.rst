@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-ToDD Dependencies
-=======
 Dependencies
->>>>>>> master
 ================================
 
 .. toctree::

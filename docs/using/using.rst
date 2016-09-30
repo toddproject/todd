@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-Using ToDD
-=======
 User Guide
->>>>>>> master
 ================================
 
 .. toctree::

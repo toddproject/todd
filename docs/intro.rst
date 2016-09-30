@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-Introduction to ToDD
-=======
 Introduction
->>>>>>> master
 ================================
 
 Welcome to the documentation for ToDD! ToDD is an extensible framework for providing natively distributed network testing on demand. ToDD is an acronym that stands for "Testing on Demand: Distributed!". 
