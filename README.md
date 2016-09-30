@@ -1,6 +1,6 @@
 ToDD
 ====
-[![Build Status](https://travis-ci.org/Mierdin/todd.svg?branch=master)](https://travis-ci.org/Mierdin/todd)
+[![Build Status](https://travis-ci.org/toddproject/todd.svg?branch=master)](https://travis-ci.org/toddproject/todd)
 [![Documentation Status](https://readthedocs.org/projects/todd/badge/?version=latest)](http://todd.readthedocs.org/en/latest/?badge=latest)
 [![Go Report Card](https://goreportcard.com/badge/github.com/toddproject/todd)](https://goreportcard.com/report/github.com/toddproject/todd)
 
@@ -68,9 +68,9 @@ Assuming the above criteria have been met, you should be ready to run "make inst
 
 # Docker
 
-A Docker container for ToDD [is available from Docker Hub](https://hub.docker.com/r/mierdin/todd/):
+A Docker container for ToDD [is available from Docker Hub](https://hub.docker.com/r/toddproject/todd/):
 
-    docker pull mierdin/todd
+    docker pull toddproject/todd
 
 # Contributing
 
