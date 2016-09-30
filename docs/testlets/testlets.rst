@@ -9,7 +9,13 @@ Testlets
 
 Testing applications are called "testlets" in ToDD. This is a handy way of referring to "whatever is actually doing the work of testing". This concept keeps things very neatly separated - the testlets focus on performing tests, and ToDD focuses on ensuring that work is distributed as the user directs.
 
-There are a number of testlets that have been developed as part of the ToDD project (referred to as "native testlets"):
+Testlets are executed directly by the ToDD agent. The agent will pass a standardized set of arguments to the testlet, such as the target of the test, as well as any other useful parameters. Once finished, the testlet will then send metrics back to the agent by printing a JSON object to stdout.
+
+.. image:: ../images/testlet.png
+
+This generic interface makes testing in ToDD very flexible.
+
+There are a number of testlets (known as "native testlets") that have been developed as part of the ToDD project, because they represent very common use cases for many users:
 
 * `http <nativetestlets/http.html>`_
 * `bandwidth <nativetestlets/bandwidth.html>`_
