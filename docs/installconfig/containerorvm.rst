@@ -7,8 +7,8 @@ If you instead wish to run ToDD inside a Docker container, you can pull the curr
 
 .. code-block:: text
 
-    mierdin@todd-1:~$ docker pull mierdin/todd
-    mierdin@todd-1:~$ docker run --rm mierdin/todd todd -h                        
+    mierdin@todd-1:~$ docker pull toddproject/todd
+    mierdin@todd-1:~$ docker run --rm toddproject/todd todd -h                        
     NAME:
        todd - A highly extensible framework for distributed testing on demand
 
