@@ -10,7 +10,6 @@ package tsdb
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -33,7 +32,7 @@ type influxDB struct {
 
 // WriteData will write the resulting testrun data to influxdb as a batch of points - containing
 // important information like metrics and which agent reported them.
-func (ifdb influxDB) WriteData(testUuid, testRunName, groupName string, testData map[string]map[string]map[string]string) error {
+func (ifdb influxDB) WriteData(testUuid, testRunName, groupName string, testData map[string]map[string]map[string]float32) error {
 
 	// Make client
 	c, err := influx.NewHTTPClient(influx.HTTPConfig{
@@ -69,15 +68,10 @@ func (ifdb influxDB) WriteData(testUuid, testRunName, groupName string, testData
 				"testUuid":    testUuid,
 			}
 
-			// Convert our metrics to float and insert into influx fields
+			// Insert into influx fields
 			fields := make(map[string]interface{})
 			for k, v := range metrics {
-				float_v, err := strconv.ParseFloat(v, 64)
-				if err != nil {
-					log.Errorf("Error parsing metric value from %q, %q=%q: %v\n", targetAddress, k, v, err)
-					return err
-				}
-				fields[k] = float_v
+				fields[k] = v
 			}
 			pt, err := influx.NewPoint(fmt.Sprintf("testrun-%s", testRunName), tags, fields, time.Now())
 			if err != nil {

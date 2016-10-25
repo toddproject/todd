@@ -327,7 +327,7 @@ finishedloop:
 	time.Sleep(1000 * time.Millisecond)
 
 	if !sourceOverride {
-		testDataMap := make(map[string]map[string]map[string]string)
+		testDataMap := make(map[string]map[string]map[string]float32)
 		err = json.Unmarshal(clean_data_json, &testDataMap)
 		if err != nil {
 			panic("Problem converting post-test data to a map")
@@ -347,9 +347,9 @@ finishedloop:
 
 }
 
-func cleanTestData(dirtyData map[string]string) map[string]map[string]map[string]string {
+func cleanTestData(dirtyData map[string]string) map[string]map[string]map[string]float32 {
 
-	ret_map := make(map[string]map[string]map[string]string)
+	ret_map := make(map[string]map[string]map[string]float32)
 
 	for source_uuid, agentData := range dirtyData {
 
@@ -363,9 +363,12 @@ func cleanTestData(dirtyData map[string]string) map[string]map[string]map[string
 			os.Exit(1)
 		}
 
-		targetMap := make(map[string]map[string]string)
+		targetMap := make(map[string]map[string]float32)
+
+		fmt.Println(dataMap)
+
 		for target_ip, test_data := range dataMap {
-			var testletMap map[string]string
+			var testletMap map[string]float32
 			err := json.Unmarshal([]byte(test_data), &testletMap)
 			if err != nil {
 				log.Error(err)
