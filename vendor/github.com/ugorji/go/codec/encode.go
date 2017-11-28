@@ -6,6 +6,7 @@ package codec
 import (
 	"bufio"
 	"encoding"
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
@@ -15,6 +16,8 @@ import (
 )
 
 const defEncByteBufSize = 1 << 6 // 4:16, 6:64, 8:256, 10:1024
+
+var errEncoderNotInitialized = errors.New("Encoder not initialized")
 
 // AsSymbolFlag defines what should be encoded as symbols.
 type AsSymbolFlag uint8
@@ -268,76 +271,110 @@ func (z *ioEncWriter) atEndOfEncode() {
 	}
 }
 
-// ----------------------------------------
+// // ----------------------------------------
 
-// bytesEncWriter implements encWriter and can write to an byte slice.
-// It is used by Marshal function.
-type bytesEncWriter struct {
+// // bytesEncWriter implements encWriter and can write to an byte slice.
+// // It is used by Marshal function.
+// type bytesEncWriter struct {
+// 	b   []byte
+// 	c   int     // cursor
+// 	out *[]byte // write out on atEndOfEncode
+// }
+
+// func (z *bytesEncWriter) writeb(s []byte) {
+// 	oc, a := z.growNoAlloc(len(s))
+// 	if a {
+// 		z.growAlloc(len(s), oc)
+// 	}
+// 	copy(z.b[oc:], s)
+// }
+
+// func (z *bytesEncWriter) writestr(s string) {
+// 	oc, a := z.growNoAlloc(len(s))
+// 	if a {
+// 		z.growAlloc(len(s), oc)
+// 	}
+// 	copy(z.b[oc:], s)
+// }
+
+// func (z *bytesEncWriter) writen1(b1 byte) {
+// 	oc, a := z.growNoAlloc(1)
+// 	if a {
+// 		z.growAlloc(1, oc)
+// 	}
+// 	z.b[oc] = b1
+// }
+
+// func (z *bytesEncWriter) writen2(b1, b2 byte) {
+// 	oc, a := z.growNoAlloc(2)
+// 	if a {
+// 		z.growAlloc(2, oc)
+// 	}
+// 	z.b[oc+1] = b2
+// 	z.b[oc] = b1
+// }
+
+// func (z *bytesEncWriter) atEndOfEncode() {
+// 	*(z.out) = z.b[:z.c]
+// }
+
+// // have a growNoalloc(n int), which can be inlined.
+// // if allocation is needed, then call growAlloc(n int)
+
+// func (z *bytesEncWriter) growNoAlloc(n int) (oldcursor int, allocNeeded bool) {
+// 	oldcursor = z.c
+// 	z.c = z.c + n
+// 	if z.c > len(z.b) {
+// 		if z.c > cap(z.b) {
+// 			allocNeeded = true
+// 		} else {
+// 			z.b = z.b[:cap(z.b)]
+// 		}
+// 	}
+// 	return
+// }
+
+// func (z *bytesEncWriter) growAlloc(n int, oldcursor int) {
+// 	// appendslice logic (if cap < 1024, *2, else *1.25): more expensive. many copy calls.
+// 	// bytes.Buffer model (2*cap + n): much better
+// 	// bs := make([]byte, 2*cap(z.b)+n)
+// 	bs := make([]byte, growCap(cap(z.b), 1, n))
+// 	copy(bs, z.b[:oldcursor])
+// 	z.b = bs
+// }
+
+// func (z *bytesEncWriter) reset(in []byte, out *[]byte) {
+// 	z.out = out
+// 	z.b = in
+// 	z.c = 0
+// }
+
+// ---------------------------------------------
+
+// bytesEncAppender implements encWriter and can write to an byte slice.
+type bytesEncAppender struct {
 	b   []byte
-	c   int     // cursor
-	out *[]byte // write out on atEndOfEncode
+	out *[]byte
 }
 
-func (z *bytesEncWriter) writeb(s []byte) {
-	oc, a := z.growNoAlloc(len(s))
-	if a {
-		z.growAlloc(len(s), oc)
-	}
-	copy(z.b[oc:], s)
+func (z *bytesEncAppender) writeb(s []byte) {
+	z.b = append(z.b, s...)
 }
-
-func (z *bytesEncWriter) writestr(s string) {
-	oc, a := z.growNoAlloc(len(s))
-	if a {
-		z.growAlloc(len(s), oc)
-	}
-	copy(z.b[oc:], s)
+func (z *bytesEncAppender) writestr(s string) {
+	z.b = append(z.b, s...)
 }
-
-func (z *bytesEncWriter) writen1(b1 byte) {
-	oc, a := z.growNoAlloc(1)
-	if a {
-		z.growAlloc(1, oc)
-	}
-	z.b[oc] = b1
+func (z *bytesEncAppender) writen1(b1 byte) {
+	z.b = append(z.b, b1)
 }
-
-func (z *bytesEncWriter) writen2(b1, b2 byte) {
-	oc, a := z.growNoAlloc(2)
-	if a {
-		z.growAlloc(2, oc)
-	}
-	z.b[oc+1] = b2
-	z.b[oc] = b1
+func (z *bytesEncAppender) writen2(b1, b2 byte) {
+	z.b = append(z.b, b1, b2)
 }
-
-func (z *bytesEncWriter) atEndOfEncode() {
-	*(z.out) = z.b[:z.c]
+func (z *bytesEncAppender) atEndOfEncode() {
+	*(z.out) = z.b
 }
-
-// have a growNoalloc(n int), which can be inlined.
-// if allocation is needed, then call growAlloc(n int)
-
-func (z *bytesEncWriter) growNoAlloc(n int) (oldcursor int, allocNeeded bool) {
-	oldcursor = z.c
-	z.c = z.c + n
-	if z.c > len(z.b) {
-		if z.c > cap(z.b) {
-			allocNeeded = true
-		} else {
-			z.b = z.b[:cap(z.b)]
-		}
-	}
-	return
-}
-
-func (z *bytesEncWriter) growAlloc(n int, oldcursor int) {
-	// appendslice logic (if cap < 1024, *2, else *1.25): more expensive. many copy calls.
-	// bytes.Buffer model (2*cap + n): much better
-	// bs := make([]byte, 2*cap(z.b)+n)
-	bs := make([]byte, growCap(cap(z.b), 1, n))
-	copy(bs, z.b[:oldcursor])
-	z.b = bs
+func (z *bytesEncAppender) reset(in []byte, out *[]byte) {
+	z.b = in[:0]
+	z.out = out
 }
 
 // ---------------------------------------------
@@ -434,7 +471,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if f.seq == seqTypeChan && ti.rt.ChanDir()&reflect.RecvDir == 0 {
 		e.errorf("send-only channel cannot be used for receiving byte(s)")
 	}
-	elemsep := e.hh.hasElemSeparators()
+	elemsep := e.esep
 	l := rv.Len()
 	rtelem := ti.rt.Elem()
 	rtelemIsByte := uint8TypId == rt2id(rtelem) // NOT rtelem.Kind() == reflect.Uint8
@@ -530,7 +567,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	fti := f.ti
-	elemsep := e.hh.hasElemSeparators()
+	elemsep := e.esep
 	tisfi := fti.sfip
 	toMap := !(fti.toArray || e.h.StructToArray)
 	if toMap {
@@ -583,7 +620,7 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 
 func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	fti := f.ti
-	elemsep := e.hh.hasElemSeparators()
+	elemsep := e.esep
 	tisfi := fti.sfip
 	toMap := !(fti.toArray || e.h.StructToArray)
 	// if toMap, use the sorted array. If toArray, use unsorted array (to match sequence in struct)
@@ -713,7 +750,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	l := rv.Len()
 	ee.WriteMapStart(l)
-	elemsep := e.hh.hasElemSeparators()
+	elemsep := e.esep
 	if l == 0 {
 		ee.WriteMapEnd()
 		return
@@ -785,7 +822,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []reflect.Value, valFn *codecFn, asSymbols bool) {
 	ee := e.e
-	elemsep := e.hh.hasElemSeparators()
+	elemsep := e.esep
 	// we previously did out-of-band if an extension was registered.
 	// This is not necessary, as the natural kind is sufficient for ordering.
 
@@ -975,6 +1012,45 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 
 // // --------------------------------------------------
 
+type encWriterSwitch struct {
+	wi ioEncWriter
+	// ---- cpu cache line boundary?
+	// wb bytesEncWriter
+	wb bytesEncAppender
+	wx bool // if bytes, wx=true
+}
+
+// TODO: Uncomment after mid-stack inlining enabled in go 1.10
+//
+// func (z *encWriterSwitch) writeb(s []byte) {
+// 	if z.wx {
+// 		z.wb.writeb(s)
+// 	} else {
+// 		z.wi.writeb(s)
+// 	}
+// }
+// func (z *encWriterSwitch) writestr(s string) {
+// 	if z.wx {
+// 		z.wb.writestr(s)
+// 	} else {
+// 		z.wi.writestr(s)
+// 	}
+// }
+// func (z *encWriterSwitch) writen1(b1 byte) {
+// 	if z.wx {
+// 		z.wb.writen1(b1)
+// 	} else {
+// 		z.wi.writen1(b1)
+// 	}
+// }
+// func (z *encWriterSwitch) writen2(b1, b2 byte) {
+// 	if z.wx {
+// 		z.wb.writen2(b1, b2)
+// 	} else {
+// 		z.wi.writen2(b1, b2)
+// 	}
+// }
+
 // An Encoder writes an object to an output stream in the codec format.
 type Encoder struct {
 	// hopefully, reduce derefencing cost by laying the encWriter inside the Encoder
@@ -986,21 +1062,27 @@ type Encoder struct {
 	hh Handle
 	h  *BasicHandle
 
+	esep bool // whether it has elem separators
+
 	// ---- cpu cache line boundary?
-
-	wi ioEncWriter
-	wb bytesEncWriter
-	bw bufio.Writer
-
 	// cr containerStateRecv
 	as encDriverAsis
+	ci set
+
 	// ---- cpu cache line boundary?
+	encWriterSwitch
 
-	ci  set
-	err error
+	// ---- cpu cache line boundary?
+	bw bufio.Writer
 
-	b  [scratchByteArrayLen]byte
+	// ---- cpu cache line boundary?
 	cf codecFner
+
+	// ---- writable fields during execution --- *try* to keep in sep cache line
+
+	// ---- cpu cache line boundary?
+	b   [scratchByteArrayLen]byte
+	err error
 }
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
@@ -1025,9 +1107,10 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 }
 
 func newEncoder(h Handle) *Encoder {
-	e := &Encoder{hh: h, h: h.getBasicHandle()}
+	e := &Encoder{hh: h, h: h.getBasicHandle(), err: errEncoderNotInitialized}
 	e.e = h.newEncDriver(e)
 	e.as, _ = e.e.(encDriverAsis)
+	e.esep = e.hh.hasElemSeparators()
 	// e.cr, _ = e.e.(containerStateRecv)
 	return e
 }
@@ -1037,7 +1120,11 @@ func newEncoder(h Handle) *Encoder {
 // This accommodates using the state of the Encoder,
 // where it has "cached" information about sub-engines.
 func (e *Encoder) Reset(w io.Writer) {
+	if w == nil {
+		return
+	}
 	var ok bool
+	e.wx = false
 	e.wi.w = w
 	if e.h.WriterBufferSize > 0 {
 		bw := bufio.NewWriterSize(w, e.h.WriterBufferSize)
@@ -1064,11 +1151,18 @@ func (e *Encoder) Reset(w io.Writer) {
 
 // ResetBytes resets the Encoder with a new destination output []byte.
 func (e *Encoder) ResetBytes(out *[]byte) {
-	in := *out
+	if out == nil {
+		return
+	}
+	var in []byte
+	if out != nil {
+		in = *out
+	}
 	if in == nil {
 		in = make([]byte, defEncByteBufSize)
 	}
-	e.wb.b, e.wb.out, e.wb.c = in, out, 0
+	e.wx = true
+	e.wb.reset(in, out)
 	e.w = &e.wb
 	e.e.reset()
 	e.cf.reset(e.hh)

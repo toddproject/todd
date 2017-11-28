@@ -32,6 +32,9 @@ update_deps:
 	go get -u github.com/tools/godep
 	godep save ./...
 
+	dep ensure && dep prune
+
+
 update_assets:
 	go get -u github.com/jteeuwen/go-bindata/...
 	go-bindata -o assets/assets_unpack.go -pkg="assets" -prefix="agent" agent/testing/bashtestlets/... agent/facts/collectors/...

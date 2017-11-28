@@ -138,12 +138,16 @@ func isInGroup(matchStatements []map[string]string, factmap map[string][]string)
 				continue
 			}
 
-			regexStrs := factmap["Hostname"]
-			for j := range matchStatements {
-				result := exp.Find([]byte(regexStrs[j]))
-				if result != nil {
-					return true
-				}
+			// retrieved hostname from system
+			//
+			// TODO(mierdin): Currently, hostname is provided as single
+			// string in slice, so we can go straight to zero index.
+			// This is due to crappy implementation in the fact collecting
+			// process, so this is an acceptable temporary workaround.
+			hostname := factmap["Hostname"][0]
+
+			if exp.Match([]byte(hostname)) {
+				return true
 			}
 
 		}
