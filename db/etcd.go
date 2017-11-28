@@ -9,6 +9,7 @@
 package db
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,7 +18,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/coreos/etcd/client"
-	"golang.org/x/net/context"
 
 	"github.com/toddproject/todd/agent/defs"
 	"github.com/toddproject/todd/config"
