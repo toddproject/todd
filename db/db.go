@@ -66,6 +66,8 @@ func NewToddDB(cfg config.Config) (DatabasePackage, error) {
 	switch cfg.DB.Plugin {
 	case "etcd":
 		tdb = newEtcdDB(cfg)
+	case "dynamodb":
+		tdb = newDynamoDB(cfg)
 	default:
 		return nil, ErrInvalidDBPlugin
 	}
