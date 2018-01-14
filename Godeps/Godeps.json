@@ -56,6 +56,10 @@
 			"Rev": "af0198448092f8a6adc41f2bc801c413e2579b90"
 		},
 		{
+			"ImportPath": "github.com/jjeffery/stomp",
+			"Rev": "b994bda931e15df4b8ef38c65f533f42daa31166"
+		},
+		{
 			"ImportPath": "github.com/influxdata/influxdb/pkg/escape",
 			"Comment": "v0.10.0-442-gaf01984",
 			"Rev": "af0198448092f8a6adc41f2bc801c413e2579b90"

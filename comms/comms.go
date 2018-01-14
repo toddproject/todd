@@ -75,6 +75,8 @@ func NewToDDComms(cfg config.Config) (*toddComms, error) { // TODO: Return Packa
 	switch cfg.Comms.Plugin {
 	case "rabbitmq":
 		tc.Package = newRabbitMQComms(cfg)
+	case "amazon_mq":
+		tc.Package = newAMQComms(cfg)
 	default:
 		log.Error("Invalid comms plugin in config file")
 		return nil, errors.New("Invalid comms plugin in config file")
