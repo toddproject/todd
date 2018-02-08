@@ -7,6 +7,15 @@ clean:
 	rm -f $(GOPATH)/bin/todd
 	rm -f $(GOPATH)/bin/todd-agent
 
+docker:
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ./cmd/todd/todd ./cmd/todd
+	docker build -t toddproject/todd ./cmd/todd
+	rm ./cmd/todd/todd
+
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ./cmd/todd-server/todd-server ./cmd/todd-server
+	docker build -t toddproject/todd-server ./cmd/todd-server
+	rm ./cmd/todd-server/todd-server
+
 build:
 	docker build -t toddproject/todd -f Dockerfile .
 
