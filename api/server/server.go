@@ -37,6 +37,7 @@ func (tapi ToDDApi) Start(cfg config.Config) error {
 	// TODO(mierdin): This needs a lot of work. Not only is the version very static
 	// (which is okay for now until we hit a new version)
 	// but the static routing is gross. Make this not suck
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200) })
 	http.HandleFunc("/v1/agent", tapi.Agent)
 	http.HandleFunc("/v1/groups", tapi.Groups)
 	http.HandleFunc("/v1/object/list", tapi.ListObjects)
