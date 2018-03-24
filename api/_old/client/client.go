@@ -8,4 +8,6 @@
 
 package api
 
-type ClientAPI struct{}
+type ClientAPI struct {
+	Conf map[string]string
+}

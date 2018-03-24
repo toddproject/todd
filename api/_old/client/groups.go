@@ -1,5 +1,5 @@
 /*
-    ToDD Client API Calls for "todd objects"
+    ToDD Client API Calls for "todd groups"
 
 	Copyright 2016 Matt Oswalt. Use or modification of this
 	source code is governed by the license provided here:
@@ -9,26 +9,20 @@
 package api
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"text/tabwriter"
 
-	"github.com/toddproject/todd/server/objects"
+	"github.com/toddproject/todd/hostresources"
 )
 
-// Objects will query ToDD for all objects, with the type requested in the sub-arguments, and then display a list of those
-// objects to the user.
-func (capi ClientAPI) Objects(conf map[string]string, objType string) error {
+// Groups will query ToDD for a map containing current agent-to-group mappings
+func (capi ClientAPI) GroupsMap(conf map[string]string) error {
 
-	// If no subarg was provided, instruct the user to provide the object type
-	if objType == "" {
-		return errors.New("Please provide the object type")
-	}
-
-	url := fmt.Sprintf("http://%s:%s/v1/object/%s", conf["host"], conf["port"], objType)
+	url := fmt.Sprintf("http://%s:%s/v1/groups", conf["host"], conf["port"])
 
 	// Build the request
 	req, err := http.NewRequest("GET", url, nil)
@@ -51,22 +45,25 @@ func (capi ClientAPI) Objects(conf map[string]string, objType string) error {
 		return err
 	}
 
-	parsedObjects := objects.ParseToddObjects(body)
+	// Marshal API data into map
+	var groupmap map[string]string
+	err = json.Unmarshal(body, &groupmap)
+	if err != nil {
+		return err
+	}
 
 	w := new(tabwriter.Writer)
 
 	// Format in tab-separated columns with a tab stop of 8.
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
-	fmt.Fprintln(w, "LABEL\tTYPE\tSPEC\t")
+	fmt.Fprintln(w, "UUID\tGROUP NAME")
 
-	for i := range parsedObjects {
-
+	for agentUUID, groupName := range groupmap {
 		fmt.Fprintf(
 			w,
-			"%s\t%s\t%s\n",
-			parsedObjects[i].GetLabel(),
-			parsedObjects[i].GetType(),
-			parsedObjects[i].GetSpec(),
+			"%s\t%s\n",
+			hostresources.TruncateID(agentUUID),
+			groupName,
 		)
 	}
 	fmt.Fprintln(w)

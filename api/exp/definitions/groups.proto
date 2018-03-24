@@ -1,0 +1,52 @@
+syntax = "proto3";
+package todd.api.exp;
+
+
+// The Groups service definition.
+service Groups {   
+  // Get all Groups with filter - A server-to-client streaming RPC.
+  // rpc GetGroups(GroupFilter) returns (stream Group) {}
+
+  // Get Groups with filter - simple RPC
+  rpc GetGroups(GroupFilter) returns (GroupList) {}
+
+  // Create a new Group - A simple RPC 
+  rpc CreateGroup (Group) returns (GroupResponse) {}
+}
+
+// Request message for creating a new Group
+message Group {
+  int32 id = 1;  // Unique ID number for a Group.
+  string name  = 2;
+  
+  message Match {
+
+    // Add enum for this?
+    string matchtype = 1;
+    string matchstatement = 2;
+  }
+
+  repeated Match matches = 3;
+}
+
+message GroupList{
+    repeated Group groups = 1;
+}
+
+message GroupResponse {
+  int32 id = 1;
+  bool success = 2;
+}
+message GroupFilter {    
+  string keyword = 1;
+}
+
+
+
+// ---
+// type: group
+// label: blue
+// spec:
+//     group: blue
+//     matches:
+//     - hostname: "todd-agent-.*[13579]"

@@ -91,7 +91,7 @@ function startinfra {
 # arg $3: agent config location
 function starttodd {
     echo "Starting todd-server"
-    docker run -d -h="todd-server" -p 8081:8081 -p 8080:8080 -p 8090:8090 --net todd-network --name="todd-server" $toddimage todd-server --config="$2" > /dev/null
+    docker run -d -h="todd-server" -p 50099:50099 -p 8081:8081 -p 8080:8080 -p 8090:8090 --net todd-network --name="todd-server" $toddimage todd-server --config="$2" > /dev/null
 
     i="0"
     while [ $i -lt $1 ]

@@ -8,9 +8,13 @@ clean:
 	rm -f $(GOPATH)/bin/todd-agent
 
 build:
+	rm -f api/v1/generated/*
 	docker build -t toddproject/todd -f Dockerfile .
 
 compile:
+
+	# Generate API code
+	rm -rf api/exp/generated/ && mkdir -p api/exp/generated/ && protoc -I api/exp/definitions/ api/exp/definitions/* --go_out=plugins=grpc:api/exp/generated/
 
 	# Installing testlets
 	./scripts/gettestlets.sh

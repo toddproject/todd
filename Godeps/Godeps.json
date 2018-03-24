@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/toddproject/todd",
-	"GoVersion": "go1.6",
-	"GodepVersion": "v75",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v80",
 	"Packages": [
 		"./..."
 	],
