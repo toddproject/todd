@@ -14,6 +14,12 @@
 - API for interacting with ToDD as well as agent communication
 - Use grpc authentication for securit
 
+## Implementation Steps
+
+- [ ] FInish models
+- [ ] Create new client package and CLI hooks into it
+- [ ] 
+
 ## TODO
 
 - [ ] See if you can solve the asset distribution problem with the new api. Shouldn't need to do interface detection on the server.

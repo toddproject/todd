@@ -21,9 +21,18 @@ message Group {
   
   message Match {
 
-    // Add enum for this?
-    string matchtype = 1;
-    string matchstatement = 2;
+    // This was an attempt to make this field an enum. Worked great except YAML
+    // unmarshal didn't know how to handle it unless the field value was an int.
+    // Need to figure out how to do this while preserving the proper UX
+    //
+    // enum Type {
+    //   HOSTNAME = 0;
+    //   SUBNET = 1;
+    // }
+    // Type type = 1;
+
+    string type = 1;
+    string statement = 2;
   }
 
   repeated Match matches = 3;
@@ -43,10 +52,11 @@ message GroupFilter {
 
 
 
-// ---
-// type: group
-// label: blue
-// spec:
-//     group: blue
-//     matches:
-//     - hostname: "todd-agent-.*[13579]"
+// Saw this: https://github.com/golang/protobuf/issues/263
+// Can this be used to also offer REST?
+// // List returns all available platforms
+// rpc List(GetPlatformsRequest) returns (GetPlatformsResponse) {
+//   option (google.api.http) = {
+//     get: "/v1/platforms"
+//   };
+// }

@@ -45,7 +45,7 @@ start: compile
 	# This mode is just to get a demo of ToDD running within the VM quickly.
 	# It made sense to re-use the configurations for integration testing, so
 	# that's why "server-int.cfg" and "agent-int.cfg" are being used here.
-	start-containers.sh 3 /etc/todd/server-int.cfg /etc/todd/agent-int.cfg
+	start-containers.sh 6 /etc/todd/server-int.cfg /etc/todd/agent-int.cfg
 
 install:
 

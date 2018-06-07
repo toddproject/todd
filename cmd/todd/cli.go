@@ -9,13 +9,18 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
 	"text/tabwriter"
 
+	"gopkg.in/yaml.v2"
+
 	api "github.com/toddproject/todd/api/exp"
+	pb "github.com/toddproject/todd/api/exp/generated"
 )
 
 // PrintResourcesTable takes an API resource and pretty-prints it to a table, regardless of its fields.
@@ -73,4 +78,33 @@ func getResourceValues(resource api.ToDDResource) ([]string, error) {
 		retSlice = append(retSlice, fmt.Sprintf("%v", valueField.Interface()))
 	}
 	return retSlice, nil
+}
+
+// marshalGroupFromFile creates a new Group instance from a file definition
+func marshalGroupFromFile(absPath string) (*pb.Group, error) {
+	yamlDef, _ := getYAMLDef(absPath)
+
+	var groupObj *pb.Group
+	err := yaml.Unmarshal(yamlDef, &groupObj)
+	if err != nil {
+		return nil, err
+	}
+
+	return groupObj, nil
+}
+
+// getYAMLDef reads YAML from either stdin or from the filename if stdin is empty
+func getYAMLDef(yamlFileName string) ([]byte, error) {
+	// If stdin is populated, read from that
+	if stat, err := os.Stdin.Stat(); err == nil && (stat.Mode()&os.ModeCharDevice) == 0 {
+		return ioutil.ReadAll(os.Stdin)
+	}
+
+	// Quit if there's nothing on stdin, and there's no arg either
+	if yamlFileName == "" {
+		return nil, errors.New("Object definition file not provided - please provide via filename or stdin")
+	}
+
+	// Read YAML file
+	return ioutil.ReadFile(yamlFileName)
 }

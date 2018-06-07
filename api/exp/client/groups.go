@@ -19,7 +19,8 @@ import (
 	pb "github.com/toddproject/todd/api/exp/generated"
 )
 
-func (capi APIExpClient) ListGroups(conf map[string]string) (error, []*pb.Group) {
+// ListGroups retrieves all groups
+func (capi APIExpClient) ListGroups(conf map[string]string) ([]*pb.Group, error) {
 
 	var (
 		serverAddr = flag.String("server_addr", "127.0.0.1:50099", "The server address in the format of host:port")
@@ -35,10 +36,10 @@ func (capi APIExpClient) ListGroups(conf map[string]string) (error, []*pb.Group)
 
 	groupList, err := client.GetGroups(context.Background(), &pb.GroupFilter{})
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
-	return nil, groupList.Groups
+	return groupList.Groups, nil
 
 }
 
@@ -48,14 +49,33 @@ func (capi APIExpClient) GetGroup(groupName string) error {
 	return nil
 }
 
-// GetGroup retrieves a specific group by name
+// DeleteGroup deletes a specific group by name
 func (capi APIExpClient) DeleteGroup(groupName string) error {
-	fmt.Printf("NOT IMPLEMENTED - would have retrieved group %s\n", groupName)
+	fmt.Printf("NOT IMPLEMENTED - would have deleted group %s\n", groupName)
 	return nil
 }
 
-// CreateGroup sends request to create a new group
-func (capi APIExpClient) CreateGroup(groupName string) error {
-	fmt.Printf("NOT IMPLEMENTED - would have retrieved group %s\n", groupName)
+// CreateGroup creates a new group
+func (capi APIExpClient) CreateGroup(group *pb.Group) error {
+
+	var (
+		serverAddr = flag.String("server_addr", "127.0.0.1:50099", "The server address in the format of host:port")
+	)
+
+	// TODO(mierdin): Add security options
+	conn, err := grpc.Dial(*serverAddr, grpc.WithInsecure())
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	defer conn.Close()
+	client := pb.NewGroupsClient(conn)
+
+	_, err = client.CreateGroup(context.Background(), group)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
 	return nil
 }

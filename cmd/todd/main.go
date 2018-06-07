@@ -11,6 +11,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	cli "github.com/codegangsta/cli"
 	capi "github.com/toddproject/todd/api/_old/client"
@@ -124,10 +125,10 @@ func main() {
 			},
 		},
 
-		// "todd groups ..."
+		// "todd group ..."
 		// TODO(mierdin) need to document usage of c.Args().First()
 		{
-			Name:    "groups",
+			Name:    "group",
 			Aliases: []string{"gr"},
 			Usage:   "Work with ToDD groups",
 			Subcommands: []cli.Command{
@@ -135,7 +136,7 @@ func main() {
 					Name:  "list",
 					Usage: "List group definitions",
 					Action: func(c *cli.Context) {
-						err, groups := expApiClient.ListGroups(
+						groups, err := expApiClient.ListGroups(
 							map[string]string{
 								"host": host,
 								"port": port,
@@ -145,7 +146,6 @@ func main() {
 							fmt.Println(err)
 							os.Exit(1)
 						} else {
-							fmt.Println("GOT GROUPS")
 
 							// Convert to interface slice
 							// https://github.com/golang/go/wiki/InterfaceSlice
@@ -186,13 +186,28 @@ func main() {
 						}
 					},
 				},
+
+				// TODO(mierdin): Optionally, would be cool if for all "create" CLI functions, you
+				// could allow the user to not specify a path arg, in which case they'd be sent to
+				// a wizard to assemble it themselves
 				{
-					Name:  "create",
-					Usage: "Create a new group definition from file",
+					Name:      "create",
+					Usage:     "Create a new group definition from file",
+					ArgsUsage: "<PATH>",
 					Action: func(c *cli.Context) {
-						err := expApiClient.CreateGroup(
-							c.Args().First(),
-						)
+						absPath, err := filepath.Abs(c.Args().First())
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						group, err := marshalGroupFromFile(absPath)
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						err = expApiClient.CreateGroup(group)
 						if err != nil {
 							fmt.Println(err)
 							os.Exit(1)

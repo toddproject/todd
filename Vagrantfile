@@ -7,6 +7,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"
   # config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
   config.vm.synced_folder '..', '/home/vagrant/go/src/github.com/toddproject', nfs: true
+  
+  config.vm.synced_folder '../../Mierdin', '/home/vagrant/go/src/github.com/Mierdin', type: "rsync", rsync__exclude: [".git/", "virtualenv"]
 
   config.vm.provider "virtualbox" do |v|
     v.memory = 2048

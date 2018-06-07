@@ -20,6 +20,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/toddproject/todd/agent/defs"
+	pb "github.com/toddproject/todd/api/exp/generated"
 	"github.com/toddproject/todd/config"
 	"github.com/toddproject/todd/server/objects"
 )
@@ -611,3 +612,72 @@ func (etcddb *etcdDB) GetCleanTestData(testUUID string) (string, error) {
 
 //     return nil
 // }
+
+func (etcddb *etcdDB) GetGroups() ([]*pb.Group, error) {
+
+	groups := []*pb.Group{}
+
+	keyStr := fmt.Sprintf("/todd/group/")
+
+	resp, err := etcddb.keysAPI.Get(context.Background(), keyStr, &client.GetOptions{Recursive: true})
+	if err != nil {
+		// TODO(mierdin): wtf? Why is this the log message?
+		log.Warn("ToDD group store empty when queried")
+		return groups, nil
+	}
+
+	// We are expecting that this node is a directory
+	if !resp.Node.Dir {
+		// We are definitely expecting an ETCd directory, so we should return nothing if this is not the case.
+		return nil, errors.New("Etcd query for objects did not result in a directory as expected")
+	}
+
+	// Iterate over found objects
+	for _, node := range resp.Node.Nodes {
+		log.Printf("Retrieving object from etcd: %s \n", node.Value)
+
+		// Marshal retrieved data into group
+		var group *pb.Group
+		err = json.Unmarshal([]byte(node.Value), &group)
+		if err != nil {
+			return nil, err
+		}
+
+		groups = append(groups, group)
+	}
+
+	return groups, nil
+}
+
+// CreateGroup writes a group defintion to etcd
+func (etcddb *etcdDB) CreateGroup(group *pb.Group) error {
+	groupJSON, err := json.Marshal(group)
+	if err != nil {
+		log.Error("Problem converting group to JSON")
+		return err
+	}
+
+	keyStr := fmt.Sprintf("/todd/group/%s", group.Name)
+
+	log.Debugf("Setting '%s' key", keyStr)
+
+	_, err = etcddb.keysAPI.Set(
+		context.Background(), // context
+		keyStr,               // key
+		string(groupJSON),    // value
+		nil,                  //optional args
+	)
+	if err != nil {
+		log.Errorf("Problem writing group %s to etcd", group.Name)
+		return err
+	}
+
+	log.Infof("Succesfully wrote group %s to etcd", group.Name)
+	log.Debugf("Group JSON: %s", groupJSON)
+	return nil
+
+}
+
+func (etcddb *etcdDB) DeleteGroup(group *pb.Group) error {
+	return nil
+}
