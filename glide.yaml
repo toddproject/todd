@@ -1,0 +1,15 @@
+package: github.com/toddproject/todd
+import:
+- package: golang.org/x/sys
+- package: google.golang.org/grpc
+  version: v1.13.0
+- package: github.com/grpc-ecosystem/grpc-gateway
+  version: ~1.5.0
+- package: github.com/golang/protobuf
+  version: ~1.2.0
+  subpackages:
+  - protoc-gen-go
+- package: github.com/influxdata/influxdb
+  version: ~1.6.3
+  subpackages:
+  - client/v2

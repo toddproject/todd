@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -169,6 +170,38 @@ func TestClient_Query(t *testing.T) {
 	}
 }
 
+func TestClient_Query_RP(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		params := r.URL.Query()
+		if got, exp := params.Get("db"), "db0"; got != exp {
+			t.Errorf("unexpected db query parameter: %s != %s", exp, got)
+		}
+		if got, exp := params.Get("rp"), "rp0"; got != exp {
+			t.Errorf("unexpected rp query parameter: %s != %s", exp, got)
+		}
+		var data client.Response
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(data)
+	}))
+	defer ts.Close()
+
+	u, _ := url.Parse(ts.URL)
+	config := client.Config{URL: *u}
+	c, err := client.NewClient(config)
+	if err != nil {
+		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
+	}
+
+	query := client.Query{
+		Database:        "db0",
+		RetentionPolicy: "rp0",
+	}
+	_, err = c.Query(query)
+	if err != nil {
+		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
+	}
+}
+
 func TestClient_ChunkedQuery(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var data client.Response
@@ -188,6 +221,86 @@ func TestClient_ChunkedQuery(t *testing.T) {
 
 	query := client.Query{Chunked: true}
 	_, err = c.Query(query)
+	if err != nil {
+		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
+	}
+}
+
+func TestClient_QueryContext(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var data client.Response
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(data)
+	}))
+	defer ts.Close()
+
+	u, _ := url.Parse(ts.URL)
+	config := client.Config{URL: *u}
+	c, err := client.NewClient(config)
+	if err != nil {
+		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
+	}
+
+	query := client.Query{}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	_, err = c.QueryContext(ctx, query)
+	if err != nil {
+		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
+	}
+}
+
+func TestClient_QueryContext_Cancelled(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var data client.Response
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(data)
+	}))
+	defer ts.Close()
+
+	u, _ := url.Parse(ts.URL)
+	config := client.Config{URL: *u}
+	c, err := client.NewClient(config)
+	if err != nil {
+		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
+	}
+
+	query := client.Query{}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err = c.QueryContext(ctx, query)
+	if err == nil {
+		t.Fatalf("Since context was cancelled an error was expected, but got nil.")
+	}
+}
+
+func TestClient_ChunkedQuery_WithContext(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var data client.Response
+		w.WriteHeader(http.StatusOK)
+		enc := json.NewEncoder(w)
+		_ = enc.Encode(data)
+		_ = enc.Encode(data)
+	}))
+	defer ts.Close()
+
+	u, _ := url.Parse(ts.URL)
+	config := client.Config{URL: *u}
+	c, err := client.NewClient(config)
+	if err != nil {
+		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
+	}
+
+	query := client.Query{Chunked: true}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	_, err = c.QueryContext(ctx, query)
 	if err != nil {
 		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
 	}
@@ -226,6 +339,12 @@ func TestClient_BasicAuth(t *testing.T) {
 
 func TestClient_Write(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		in, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		} else if have, want := strings.TrimSpace(string(in)), `m0,host=server01 v1=2,v2=2i,v3=2u,v4="foobar",v5=true 0`; have != want {
+			t.Errorf("unexpected write protocol: %s != %s", have, want)
+		}
 		var data client.Response
 		w.WriteHeader(http.StatusNoContent)
 		_ = json.NewEncoder(w).Encode(data)
@@ -239,7 +358,24 @@ func TestClient_Write(t *testing.T) {
 		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
 	}
 
-	bp := client.BatchPoints{}
+	bp := client.BatchPoints{
+		Points: []client.Point{
+			{
+				Measurement: "m0",
+				Tags: map[string]string{
+					"host": "server01",
+				},
+				Time: time.Unix(0, 0).UTC(),
+				Fields: map[string]interface{}{
+					"v1": float64(2),
+					"v2": int64(2),
+					"v3": uint64(2),
+					"v4": "foobar",
+					"v5": true,
+				},
+			},
+		},
+	}
 	r, err := c.Write(bp)
 	if err != nil {
 		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
@@ -539,7 +675,7 @@ func TestEpochToTime(t *testing.T) {
 		if e != nil {
 			t.Fatalf("unexpected error: expected %v, actual: %v", nil, e)
 		}
-		if tm != test.expected {
+		if !tm.Equal(test.expected) {
 			t.Fatalf("unexpected time: expected %v, actual %v", test.expected, tm)
 		}
 	}
@@ -551,7 +687,6 @@ func emptyTestServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(50 * time.Millisecond)
 		w.Header().Set("X-Influxdb-Version", "x.x")
-		return
 	}))
 }
 
@@ -643,33 +778,58 @@ func TestClient_NoTimeout(t *testing.T) {
 	}
 }
 
-func TestClient_WriteUint64(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var data client.Response
-		w.WriteHeader(http.StatusNoContent)
-		_ = json.NewEncoder(w).Encode(data)
-	}))
-	defer ts.Close()
-
-	u, _ := url.Parse(ts.URL)
-	config := client.Config{URL: *u}
-	c, err := client.NewClient(config)
-	if err != nil {
-		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
-	}
-	bp := client.BatchPoints{
-		Points: []client.Point{
-			{
-				Fields: map[string]interface{}{"value": uint64(10)},
-			},
+func TestClient_ParseConnectionString(t *testing.T) {
+	for _, tt := range []struct {
+		addr string
+		ssl  bool
+		exp  string
+	}{
+		{
+			addr: "localhost",
+			exp:  "http://localhost:8086",
 		},
-	}
-	r, err := c.Write(bp)
-	if err == nil {
-		t.Fatalf("unexpected error. expected err, actual %v", err)
-	}
-	if r != nil {
-		t.Fatalf("unexpected response. expected %v, actual %v", nil, r)
+		{
+			addr: "localhost:8086",
+			exp:  "http://localhost:8086",
+		},
+		{
+			addr: "localhost:80",
+			exp:  "http://localhost",
+		},
+		{
+			addr: "localhost",
+			exp:  "https://localhost:8086",
+			ssl:  true,
+		},
+		{
+			addr: "localhost:443",
+			exp:  "https://localhost",
+			ssl:  true,
+		},
+		{
+			addr: "localhost:80",
+			exp:  "https://localhost:80",
+			ssl:  true,
+		},
+		{
+			addr: "localhost:443",
+			exp:  "http://localhost:443",
+		},
+	} {
+		name := tt.addr
+		if tt.ssl {
+			name += "+ssl"
+		}
+		t.Run(name, func(t *testing.T) {
+			u, err := client.ParseConnectionString(tt.addr, tt.ssl)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			if got, want := u.String(), tt.exp; got != want {
+				t.Fatalf("unexpected connection string: got=%s want=%s", got, want)
+			}
+		})
 	}
 }
 
@@ -827,5 +987,36 @@ func TestChunkedResponse(t *testing.T) {
 		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
 	} else if resp != nil {
 		t.Fatalf("unexpected response.  expected %v, actual %v", nil, resp)
+	}
+}
+
+func TestClient_Proxy(t *testing.T) {
+	pinged := false
+	server := httptest.NewServer(http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		if got, want := req.URL.String(), "http://example.com:8086/ping"; got != want {
+			t.Errorf("invalid url in request: got=%s want=%s", got, want)
+		}
+		resp.WriteHeader(http.StatusNoContent)
+		pinged = true
+	}))
+	defer server.Close()
+
+	proxyURL, _ := url.Parse(server.URL)
+	c, err := client.NewClient(client.Config{
+		URL: url.URL{
+			Scheme: "http",
+			Host:   "example.com:8086",
+		},
+		Proxy: http.ProxyURL(proxyURL),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if _, _, err := c.Ping(); err != nil {
+		t.Fatalf("could not ping server: %s", err)
+	}
+
+	if !pinged {
+		t.Fatalf("no http request was received")
 	}
 }
