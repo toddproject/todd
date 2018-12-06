@@ -31,6 +31,7 @@ RUN cd /go/src/github.com/toddproject/todd && GO15VENDOREXPERIMENT=1 make && mak
 
 RUN cp /go/src/github.com/toddproject/todd/etc/* /etc/todd
 
+
 # Create runtime container
 FROM debian:jessie
 
