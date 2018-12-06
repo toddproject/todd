@@ -1,0 +1,51 @@
+syntax = "proto3";
+package todd.api.exp;
+
+import "validate/validate.proto";
+import "google/protobuf/empty.proto";
+
+service Apps {
+  rpc ListApps(google.protobuf.Empty) returns (AppList) {}
+  rpc CreateApp (App) returns (AppResponse) {}
+}
+
+message App {
+  int32 id = 1;
+  string name  = 2 [(validate.rules).string.min_len = 3];
+
+  message AppParams {
+      string testlet = 1;
+      repeated string args = 2;
+  }
+
+  // These are just parameters passed to the testlet. The actual desired target and source are defined in livetest
+  AppParams sourceParams = 3;
+  AppParams targetParams = 4;
+}
+
+message AppList{
+    repeated App apps = 1;
+}
+
+message AppResponse {
+  int32 id = 1;
+  bool success = 2;
+}
+message AppFilter {
+  string keyword = 1;
+}
+
+
+
+// ---
+// type: testrun
+// label: test-http
+// spec:
+//     targettype: uncontrolled
+//     source:
+//         name: red
+//         app: http
+//         args: ""
+//     target:
+//     - salesforce.com
+//     - portal.office.com

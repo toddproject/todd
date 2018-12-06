@@ -51,7 +51,7 @@ func init() {
 
 func main() {
 
-	cfg, err := config.GetConfig(argConfig)
+	cfg, err := config.LoadConfigFromEnv()
 	if err != nil {
 		os.Exit(1)
 	}
@@ -97,7 +97,7 @@ func main() {
 	// Get default IP address for the server.
 	// This address is primarily used so that the server knows how to orchestrate tests.
 	// (i.e. This agent publishes it's default address, and the server instructs other agents to target it in tests)
-	defaultaddr, err := hostresources.GetDefaultInterfaceIP(cfg.LocalResources.DefaultInterface, cfg.LocalResources.IPAddrOverride)
+	defaultaddr, err := hostresources.GetDefaultInterfaceIP(cfg.DefaultInterface, cfg.IPAddrOverride)
 	if err != nil {
 		log.Fatalf("Unable to derive address from configured DefaultInterface: %v", err)
 	}
@@ -139,7 +139,7 @@ func main() {
 // It will periodically look at the table and send any present test data back to the server as a response.
 // When the server has successfully received this data, it will send a task back to this specific agent
 // to delete this row from the cache.
-func watchForFinishedTestRuns(cfg config.Config, ac *cache.AgentCache) error {
+func watchForFinishedTestRuns(cfg *config.ToDDConfig, ac *cache.AgentCache) error {
 	agentUUID, err := ac.GetKeyValue("uuid")
 	if err != nil {
 		return err

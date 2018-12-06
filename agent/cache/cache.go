@@ -38,9 +38,9 @@ type AgentCache struct {
 }
 
 // New returns an initialized instance of AgentCache.
-func New(cfg config.Config) (*AgentCache, error) {
+func New(cfg *config.ToDDConfig) (*AgentCache, error) {
 
-	dbLoc := filepath.Join(cfg.LocalResources.OptDir, "agent_cache.db")
+	dbLoc := filepath.Join(cfg.OptDir, "agent_cache.db")
 
 	// Clean up any old cache data
 	err := os.Remove(dbLoc)

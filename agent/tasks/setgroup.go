@@ -20,8 +20,8 @@ import (
 // SetGroupTask defines this particular task.
 type SetGroupTask struct {
 	BaseTask
-	Config    config.Config `json:"-"`
-	GroupName string        `json:"groupName"`
+	Config    config.ToDDConfig `json:"-"`
+	GroupName string            `json:"groupName"`
 }
 
 // TODO (mierdin): Could this not be condensed with the generic "keyvalue" task?

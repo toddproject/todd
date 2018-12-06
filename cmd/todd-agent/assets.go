@@ -20,7 +20,7 @@ import (
 )
 
 // GetLocalAssets gathers all currently installed assets, and generates a map of their names and hashes.
-func GetLocalAssets(cfg config.Config) map[string]map[string]string {
+func GetLocalAssets(cfg *config.ToDDConfig) map[string]map[string]string {
 
 	assetTypes := []string{
 		"factcollectors",
@@ -44,7 +44,7 @@ func GetLocalAssets(cfg config.Config) map[string]map[string]string {
 		}
 
 		// set up a directory for this particular asset type
-		thisAssetDir := fmt.Sprintf("%s/assets/%s", cfg.LocalResources.OptDir, thisType)
+		thisAssetDir := fmt.Sprintf("%s/assets/%s", cfg.OptDir, thisType)
 
 		// create fact collector directory if needed
 		err := os.MkdirAll(thisAssetDir, 0777)

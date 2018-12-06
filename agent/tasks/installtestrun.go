@@ -25,8 +25,8 @@ import (
 // InstallTestRunTask defines this particular task.
 type InstallTestRunTask struct {
 	BaseTask
-	Config config.Config `json:"-"`
-	Tr     defs.TestRun  `json:"testrun"`
+	Config config.ToDDConfig `json:"-"`
+	Tr     defs.TestRun      `json:"testrun"`
 }
 
 // Run contains the logic necessary to perform this task on the agent.
@@ -42,7 +42,7 @@ func (itt InstallTestRunTask) Run(ac *cache.AgentCache) error {
 	}
 
 	// Determine if this is a native testlet
-	testletPath, err := testing.GetTestletPath(itt.Tr.Testlet, itt.Config.LocalResources.OptDir)
+	testletPath, err := testing.GetTestletPath(itt.Tr.Testlet, itt.Config.OptDir)
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,40 @@
+syntax = "proto3";
+package todd.api.exp;
+
+
+// TODO(mierdin): Need to distinguish between a testrun defintion and type. May want to rename stuff.
+// Testrun is a bit of a problem name
+service TestrunService {   
+
+  //TODO(mierdin): Return "live" testrun ID instead of stream. Use TestrunResults for stream
+  rpc ExecuteTestrun(TestrunFilter) returns (stream TestrunResult) {}
+  
+  rpc TestrunResultsStream(TestrunFilter) returns (stream TestrunResult) {}
+
+  rpc TestrunResults(TestrunFilter) returns (TestrunResult) {}
+
+
+  // non-live things. Just definitions
+  rpc ListTestruns(TestrunFilter) returns (Testruns) {}
+  rpc GetTestrun(TestrunFilter) returns (Testrun) {}
+
+}
+
+
+message Testrun {
+    int32 id = 1;
+    string app = 2;
+    repeated string groups = 3; // TODO(mierdin): use reference to Group protobuf
+}
+
+message TestrunFilter {
+    int32 id = 1;
+}
+
+message Testruns {
+    repeated Testrun testruns = 1;
+}
+
+message TestrunResult {
+    int32 id = 1;
+}

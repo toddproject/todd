@@ -28,9 +28,9 @@ import (
 // ExecuteTestRunTask defines this particular task.
 type ExecuteTestRunTask struct {
 	BaseTask
-	Config    config.Config `json:"-"`
-	TestUUID  string        `json:"testuuid"`
-	TimeLimit int           `json:"timelimit"`
+	Config    config.ToDDConfig `json:"-"`
+	TestUUID  string            `json:"testuuid"`
+	TimeLimit int               `json:"timelimit"`
 }
 
 // Run contains the logic necessary to perform this task on the agent. This particular task will execute a
@@ -65,7 +65,7 @@ func (ett ExecuteTestRunTask) Run(ac *cache.AgentCache) error {
 	// Specify size of wait group equal to number of targets
 	wg.Add(len(tr.Targets))
 
-	testletPath, err := testing.GetTestletPath(tr.Testlet, ett.Config.LocalResources.OptDir)
+	testletPath, err := testing.GetTestletPath(tr.Testlet, ett.Config.OptDir)
 	if err != nil {
 		return err
 	}

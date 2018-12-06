@@ -3,6 +3,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:b02e5e3f836f077a3249d1dfe3c57d305e007f71a98f2e69c170a2dd8d2b266c"
+  name = "github.com/AndreasBriese/bbloom"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "343706a395b76e5ca5c7dca46a5d937b48febc74"
+
+[[projects]]
+  branch = "master"
   digest = "1:1d11307230f6c30c988350d470540c477f7567dd15c9f32a51eb941f749b0b33"
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
@@ -31,6 +39,29 @@
   packages = ["semver"]
   pruneopts = "UT"
   revision = "e214231b295a8ea9479f11b70b35d5acf3556d9b"
+
+[[projects]]
+  digest = "1:5f5090f05382959db941fa45acbeb7f4c5241aa8ac0f8f4393dec696e5953f53"
+  name = "github.com/dgraph-io/badger"
+  packages = [
+    ".",
+    "options",
+    "protos",
+    "skl",
+    "table",
+    "y",
+  ]
+  pruneopts = "UT"
+  revision = "99233d725dbdd26d156c61b2f42ae1671b794656"
+  version = "v1.5.4"
+
+[[projects]]
+  branch = "master"
+  digest = "1:8583eab935e3d99d3a7ac489cd2ee7c8e95eecd7c64ab1fc8382746dacaf8563"
+  name = "github.com/dgryski/go-farm"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "2de33835d10275975374b37b2dcfd22c9020a1f5"
 
 [[projects]]
   digest = "1:4c0989ca0bcd10799064318923b9bc2db6b4d6338dd75f3f2d86c3511aaaf5cf"
@@ -243,6 +274,7 @@
     "github.com/Sirupsen/logrus",
     "github.com/codegangsta/cli",
     "github.com/coreos/etcd/client",
+    "github.com/dgraph-io/badger",
     "github.com/golang/protobuf/proto",
     "github.com/influxdata/influxdb/client/v2",
     "github.com/mattn/go-sqlite3",

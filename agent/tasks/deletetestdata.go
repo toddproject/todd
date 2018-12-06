@@ -21,8 +21,8 @@ import (
 // DeleteTestData task through comms
 type DeleteTestDataTask struct {
 	BaseTask
-	Config   config.Config `json:"-"`
-	TestUUID string        `json:"key"`
+	Config   config.ToDDConfig `json:"-"`
+	TestUUID string            `json:"key"`
 }
 
 // Run contains the logic necessary to perform this task on the agent.

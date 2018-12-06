@@ -1,0 +1,49 @@
+syntax = "proto3";
+package todd.api.exp;
+
+// https://grpc.io/docs/tutorials/basic/go.html#bidirectional-streaming-rpc-1
+service AgentsService {   
+
+  // TODO(mierdin): MUST be authenticated, potentially different auth than other endpoints.
+  // TODO(mierdin): Will have to provide initial agent defs via AgentTaskResult
+  // TODO(mierdin): Should also perform grouping here, once, on registration.
+  rpc AgentRegister(stream AgentTaskResult) returns (stream AgentTaskRequest) {}
+
+  rpc ListAgents(AgentFilter) returns (Agents) {}
+  rpc GetAgent(AgentFilter) returns (Agent) {}
+
+}
+
+
+message Agent {
+    int32 id = 1;
+}
+
+message AgentFilter {
+    int32 id = 1;
+}
+
+message Agents {
+    repeated Agent agents = 1;
+}
+
+// AgentTaskRequest is a message sent to an agent, containing a task it is to perform.
+message AgentTaskRequest {
+    int32 id = 1;
+}
+
+message AgentTaskResult {
+    int32 id = 1;
+    int32 requestId = 2;  // need to refer back to the original request ID
+}
+
+// Can you download assets via grpc?
+message DownloadAssetTask {
+    int32 id = 1;
+}
+
+// TODO We can trigger the testrun, but we don't want them to run until we've confirmed they've all received the message, so
+// they all run at the same time. Need to think about this
+message TriggerTestrunTask {
+    int32 id = 1;
+}

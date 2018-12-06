@@ -19,13 +19,12 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	api "github.com/toddproject/todd/api/exp"
 	pb "github.com/toddproject/todd/api/exp/generated"
 )
 
 // PrintResourcesTable takes an API resource and pretty-prints it to a table, regardless of its fields.
 // use this for general resources that don't need any special output treatment.
-func PrintResourcesTable(resources []api.ToDDResource) error {
+func PrintResourcesTable(resources []interface{}) error {
 	w := new(tabwriter.Writer)
 
 	// Format in tab-separated columns with a tab stop of 8.
@@ -58,7 +57,7 @@ func PrintResourcesTable(resources []api.ToDDResource) error {
 // TODO (mierdin): Should consider just adding a field to each resource definition to keep track of the headers that are useful
 // in a list format. That way we don't have to do this reflect. print only the headers the object says are useful in a "list" operation
 // and print verbosely in a "get" operation, just like st2 does.
-func getResourceFields(resource api.ToDDResource) ([]string, error) {
+func getResourceFields(resource interface{}) ([]string, error) {
 	var retSlice []string
 	val := reflect.ValueOf(resource).Elem()
 	for i := 0; i < val.NumField(); i++ {
@@ -69,7 +68,7 @@ func getResourceFields(resource api.ToDDResource) ([]string, error) {
 }
 
 // getResourceValues retrieves a resource's field values and returns them as a slice of strings
-func getResourceValues(resource api.ToDDResource) ([]string, error) {
+func getResourceValues(resource interface{}) ([]string, error) {
 	var retSlice []string
 	val := reflect.ValueOf(resource).Elem()
 	for i := 0; i < val.NumField(); i++ {

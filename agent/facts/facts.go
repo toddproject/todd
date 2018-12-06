@@ -23,10 +23,10 @@ import (
 // It does so by iterating over the collectors installed on this agent's system,
 // executing them, and capturing their output. It will aggregate this output and
 // return it all as a single map (keys are fact names)
-func GetFacts(cfg config.Config) (map[string][]string, error) {
+func GetFacts(cfg *config.ToDDConfig) (map[string][]string, error) {
 	var scripts []string
 	// Find all collector scripts
-	dir := filepath.Join(cfg.LocalResources.OptDir, "assets", "factcollectors")
+	dir := filepath.Join(cfg.OptDir, "assets", "factcollectors")
 	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 		if err != nil {
 			log.Warnf("Error gathering facts: %v (%s)", err, path)

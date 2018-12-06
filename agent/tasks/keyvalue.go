@@ -20,9 +20,9 @@ import (
 // KeyValueTask defines this particular task.
 type KeyValueTask struct {
 	BaseTask
-	Config config.Config `json:"-"`
-	Key    string        `json:"key"`
-	Value  string        `json:"value"`
+	Config config.ToDDConfig `json:"-"`
+	Key    string            `json:"key"`
+	Value  string            `json:"value"`
 }
 
 // Run contains the logic necessary to perform this task on the agent. This particular task

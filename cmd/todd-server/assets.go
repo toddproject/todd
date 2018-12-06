@@ -39,12 +39,12 @@ type assetConfig struct {
 // newAssetConfig configures and returns an assetConfig. It also starts a
 // goroutine that periodically updates the assetMap and a seperate goroutine
 // providing HTTP access to the assets.
-func newAssetConfig(cfg config.Config) *assetConfig {
+func newAssetConfig(cfg config.ToDDConfig) *assetConfig {
 	// Derive directory for assets on server
 	a := &assetConfig{
 		// Derive directory for assets on server
-		dir:  filepath.Join(cfg.LocalResources.OptDir, "assets"),
-		port: cfg.Assets.Port,
+		dir:  filepath.Join(cfg.OptDir, "assets"),
+		port: "8080",
 	}
 
 	// Periodically generate a new asset map (with mutex for safety)

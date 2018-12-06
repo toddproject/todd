@@ -9,75 +9,64 @@
 package config
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"gopkg.in/gcfg.v1"
+	"os"
+	"strconv"
 )
 
-type API struct {
-	Host string
-	Port string
-}
-
-type Assets struct {
-	IP   string
-	Port string
-}
-
-type Comms struct {
-	Plugin   string
-	User     string
-	Password string
-	Host     string
-	Port     string
-}
-
-type DB struct {
-	Host         string
-	Port         string
-	Plugin       string
-	DatabaseName string
-}
-
-type TSDB struct {
-	Host         string
-	Port         string
-	Plugin       string
-	DatabaseName string
-}
-
-type Testing struct {
-	Timeout int // seconds
-}
-
-type Grouping struct {
-	Interval int // seconds
-}
-
-type LocalResources struct {
-	DefaultInterface string
+type ToDDConfig struct {
 	OptDir           string
+	TestingTimeout   int
+	DefaultInterface string
 	IPAddrOverride   string
 }
 
-type Config struct {
-	API            API
-	Assets         Assets
-	Comms          Comms
-	DB             DB
-	TSDB           TSDB
-	Testing        Testing
-	Grouping       Grouping
-	LocalResources LocalResources
-}
+func LoadConfigFromEnv() (*ToDDConfig, error) {
 
-func GetConfig(cfgpath string) (Config, error) {
-	var cfg Config
+	config := ToDDConfig{}
 
-	err := gcfg.ReadFileInto(&cfg, cfgpath)
-	if err != nil {
-		log.Errorf("Error retrieving configuration at %s", cfgpath)
-		log.Error(err)
+	/*
+		REQUIRED
+	*/
+
+	// Get configuration parameters from env
+	// searchDir := os.Getenv("SYRINGE_LESSONS")
+	// if searchDir == "" {
+	// 	return nil, errors.New("SYRINGE_LESSONS is a required variable.")
+	// } else {
+	// 	config.LessonsDir = searchDir
+	// }
+
+	/*
+		OPTIONAL
+	*/
+	timeout, err := strconv.Atoi(os.Getenv("TODD_TEST_TIMEOUT"))
+	if timeout == 0 || err != nil {
+		config.TestingTimeout = 300
+	} else {
+		config.TestingTimeout = timeout
 	}
 
-	return cfg, err
+	optdir := os.Getenv("TODD_OPT_DIR")
+	if optdir == "" {
+		config.OptDir = "/opt/todd/server"
+	} else {
+		config.OptDir = optdir
+	}
+
+	defif := os.Getenv("TODD_DEFAULT_INTERFACE")
+	if defif == "" {
+		config.DefaultInterface = "none"
+	} else {
+		config.DefaultInterface = defif
+	}
+
+	ipaddr := os.Getenv("TODD_IPADDR_OVERRIDE")
+	if ipaddr == "" {
+		config.IPAddrOverride = "none"
+	} else {
+		config.IPAddrOverride = defif
+	}
+
+	return &config, nil
+
 }
