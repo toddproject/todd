@@ -21,6 +21,7 @@ import (
 
 	"github.com/toddproject/todd/agent/defs"
 	"github.com/toddproject/todd/agent/testing"
+	pb "github.com/toddproject/todd/api/exp/generated"
 	"github.com/toddproject/todd/config"
 	"github.com/toddproject/todd/server/objects"
 )
@@ -368,9 +369,9 @@ func (etcddb *etcdDB) InitTestRun(testUUID string, testAgentMap map[string]map[s
 			// Create agent entry within this testrun
 			log.Debugf("Creating agent entry within testrun %s for agent %s", testUUID, agent)
 			_, err = etcddb.keysAPI.Set(
-				context.Background(),                                        // context
+				context.Background(), // context
 				fmt.Sprintf("/todd/testruns/%s/agents/%s", testUUID, agent), // key
-				"", // value
+				"",                            // value
 				&client.SetOptions{Dir: true}, //optional args
 			)
 			if err != nil {
@@ -388,7 +389,7 @@ func (etcddb *etcdDB) InitTestRun(testUUID string, testAgentMap map[string]map[s
 			for k, v := range initAgentProps {
 
 				_, err = etcddb.keysAPI.Set(
-					context.Background(),                                              // context
+					context.Background(), // context
 					fmt.Sprintf("/todd/testruns/%s/agents/%s/%s", testUUID, agent, k), // key
 					v,   // value
 					nil, //optional args
@@ -409,7 +410,7 @@ func (etcddb *etcdDB) InitTestRun(testUUID string, testAgentMap map[string]map[s
 // SetAgentTestStatus sets the status for an agent in a particular testrun key.
 func (etcddb *etcdDB) SetAgentTestStatus(testUUID, agentUUID, status string) error {
 	_, err := etcddb.keysAPI.Set(
-		context.Background(),                                                   // context
+		context.Background(), // context
 		fmt.Sprintf("/todd/testruns/%s/agents/%s/status", testUUID, agentUUID), // key
 		status, // value
 		nil,    //optional args
@@ -426,7 +427,7 @@ func (etcddb *etcdDB) SetAgentTestStatus(testUUID, agentUUID, status string) err
 // SetAgentTestData sets the post-test data for an agent in a particular testrun
 func (etcddb *etcdDB) SetAgentTestData(testUUID, agentUUID, testData string) error {
 	_, err := etcddb.keysAPI.Set(
-		context.Background(),                                                     // context
+		context.Background(), // context
 		fmt.Sprintf("/todd/testruns/%s/agents/%s/testdata", testUUID, agentUUID), // key
 		testData, // value
 		nil,      //optional args
@@ -612,3 +613,72 @@ func (etcddb *etcdDB) GetCleanTestData(testUUID string) (string, error) {
 
 //     return nil
 // }
+
+func (etcddb *etcdDB) GetGroups() ([]*pb.Group, error) {
+
+	groups := []*pb.Group{}
+
+	keyStr := fmt.Sprintf("/todd/group/")
+
+	resp, err := etcddb.keysAPI.Get(context.Background(), keyStr, &client.GetOptions{Recursive: true})
+	if err != nil {
+		// TODO(mierdin): wtf? Why is this the log message?
+		log.Warn("ToDD group store empty when queried")
+		return groups, nil
+	}
+
+	// We are expecting that this node is a directory
+	if !resp.Node.Dir {
+		// We are definitely expecting an ETCd directory, so we should return nothing if this is not the case.
+		return nil, errors.New("Etcd query for objects did not result in a directory as expected")
+	}
+
+	// Iterate over found objects
+	for _, node := range resp.Node.Nodes {
+		log.Printf("Retrieving object from etcd: %s \n", node.Value)
+
+		// Marshal retrieved data into group
+		var group *pb.Group
+		err = json.Unmarshal([]byte(node.Value), &group)
+		if err != nil {
+			return nil, err
+		}
+
+		groups = append(groups, group)
+	}
+
+	return groups, nil
+}
+
+// CreateGroup writes a group defintion to etcd
+func (etcddb *etcdDB) CreateGroup(group *pb.Group) error {
+	groupJSON, err := json.Marshal(group)
+	if err != nil {
+		log.Error("Problem converting group to JSON")
+		return err
+	}
+
+	keyStr := fmt.Sprintf("/todd/group/%s", group.Name)
+
+	log.Debugf("Setting '%s' key", keyStr)
+
+	_, err = etcddb.keysAPI.Set(
+		context.Background(), // context
+		keyStr,               // key
+		string(groupJSON),    // value
+		nil,                  //optional args
+	)
+	if err != nil {
+		log.Errorf("Problem writing group %s to etcd", group.Name)
+		return err
+	}
+
+	log.Infof("Succesfully wrote group %s to etcd", group.Name)
+	log.Debugf("Group JSON: %s", groupJSON)
+	return nil
+
+}
+
+func (etcddb *etcdDB) DeleteGroup(group *pb.Group) error {
+	return nil
+}

@@ -14,6 +14,7 @@ import (
 	"errors"
 
 	"github.com/toddproject/todd/agent/defs"
+	pb "github.com/toddproject/todd/api/exp/generated"
 	"github.com/toddproject/todd/config"
 	"github.com/toddproject/todd/server/objects"
 )
@@ -53,6 +54,11 @@ type DatabasePackage interface {
 	GetAgentTestData(string, string) (map[string]string, error)
 	WriteCleanTestData(string, string) error
 	GetCleanTestData(string) (string, error)
+
+	// New protobufs stuff
+	GetGroups() ([]*pb.Group, error)
+	CreateGroup(*pb.Group) error
+	DeleteGroup(*pb.Group) error
 }
 
 // NewToddDB will create a new instance of toddDatabase, and load the desired

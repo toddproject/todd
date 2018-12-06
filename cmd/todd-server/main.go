@@ -16,7 +16,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	toddapi "github.com/toddproject/todd/api/server"
+	toddapi "github.com/toddproject/todd/api/_old/server"
+	api "github.com/toddproject/todd/api/exp"
+
 	"github.com/toddproject/todd/comms"
 	"github.com/toddproject/todd/config"
 	"github.com/toddproject/todd/db"
@@ -74,6 +76,11 @@ func main() {
 	var tapi toddapi.ToDDApi
 	go func() {
 		log.Fatal(tapi.Start(cfg))
+	}()
+
+	var api api.ToDDApiExp
+	go func() {
+		log.Fatal(api.Start(cfg))
 	}()
 
 	// Start listening for agent advertisements

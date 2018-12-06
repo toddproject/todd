@@ -1,0 +1,43 @@
+syntax = "proto3";
+package definitions;
+
+
+// The Agents service definition.
+service Agents {
+
+  // Get Agents with filter - simple RPC
+  rpc GetAgents(AgentFilter) returns (Agent) {}
+
+  // Register a new agent?
+  //
+  // A few responses are possible
+  // - Reject
+  // - Accept, and set up task stream
+  // - Reject but send some mechanism for downloading testlet
+  //
+  // TODO(mierdin): Can we make this private? Some way to specify this is not for regular users to acess?
+  rpc RegisterAgent (Agent) returns (AgentResponse) {}
+}
+
+message Agent {
+  int32 id = 1;  // Unique ID number for an Agent TODO(mierdin): Figure out how this matches up with existing UUID system
+  string currentgroup = 2;
+
+
+//   UUID           string              `json:"Uuid"`
+//   DefaultAddr    string              `json:"DefaultAddr"`
+//   Expires        time.Duration       `json:"Expires"`
+//   LocalTime      time.Time           `json:"LocalTime"`
+//   Facts          map[string][]string `json:"Facts"`
+//   FactCollectors map[string]string   `json:"FactCollectors"`
+//   Testlets       map[string]string   `json:"Testlets"`
+
+}
+
+message AgentResponse {
+  int32 id = 1;
+  bool success = 2;
+}
+message AgentFilter {    
+  string keyword = 1;
+}

@@ -17,3 +17,4 @@ docs/local/
 *pip-selfcheck.json
 *.retry
 docs/virtualenv/
+api/exp/generated/

@@ -11,14 +11,18 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	cli "github.com/codegangsta/cli"
-	capi "github.com/toddproject/todd/api/client"
+	capi "github.com/toddproject/todd/api/_old/client"
+	api "github.com/toddproject/todd/api/exp"
+	expClient "github.com/toddproject/todd/api/exp/client"
 )
 
 func main() {
 
 	var clientAPI capi.ClientAPI
+	var expApiClient expClient.APIExpClient
 
 	app := cli.NewApp()
 	app.Name = "todd"
@@ -43,7 +47,18 @@ func main() {
 		},
 	}
 
+	// TODO(mierdin): This MAY not work. These vars may not execute until after app.Run
+	clientAPI.Conf = map[string]string{
+		"host": host,
+		"port": port,
+	}
+	expApiClient.Conf = map[string]string{
+		"host": host,
+		"port": port,
+	}
+
 	// ToDD Commands
+	// TODO(mierdin): this is quite large. Should consider breaking this up into more manageable chunks
 	app.Commands = []cli.Command{
 
 		// "todd agents ..."
@@ -110,40 +125,95 @@ func main() {
 			},
 		},
 
-		// "todd groups ..."
+		// "todd group ..."
+		// TODO(mierdin) need to document usage of c.Args().First()
 		{
-			Name:  "groups",
-			Usage: "Show current agent-to-group mappings",
-			Action: func(c *cli.Context) {
-				err := clientAPI.Groups(
-					map[string]string{
-						"host": host,
-						"port": port,
-					},
-				)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-			},
-		},
+			Name:    "group",
+			Aliases: []string{"gr"},
+			Usage:   "Work with ToDD groups",
+			Subcommands: []cli.Command{
+				{
+					Name:  "list",
+					Usage: "List group definitions",
+					Action: func(c *cli.Context) {
+						groups, err := expApiClient.ListGroups(
+							map[string]string{
+								"host": host,
+								"port": port,
+							},
+						)
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						} else {
 
-		// "todd objects ..."
-		{
-			Name:  "objects",
-			Usage: "Show information about installed group objects",
-			Action: func(c *cli.Context) {
-				err := clientAPI.Objects(
-					map[string]string{
-						"host": host,
-						"port": port,
+							// Convert to interface slice
+							// https://github.com/golang/go/wiki/InterfaceSlice
+							var resourceSlice []api.ToDDResource = make([]api.ToDDResource, len(groups))
+							for i, d := range groups {
+								resourceSlice[i] = d
+							}
+
+							// Print resources as table to user
+							PrintResourcesTable(resourceSlice)
+
+						}
 					},
-					c.Args().Get(0),
-				)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
+				},
+				{
+					Name:  "get",
+					Usage: "Retrieve a single group definition",
+					Action: func(c *cli.Context) {
+						err := expApiClient.GetGroup(
+							c.Args().First(),
+						)
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+					},
+				},
+				{
+					Name:  "delete",
+					Usage: "Delete a group definition",
+					Action: func(c *cli.Context) {
+						err := expApiClient.DeleteGroup(
+							c.Args().First(),
+						)
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+					},
+				},
+
+				// TODO(mierdin): Optionally, would be cool if for all "create" CLI functions, you
+				// could allow the user to not specify a path arg, in which case they'd be sent to
+				// a wizard to assemble it themselves
+				{
+					Name:      "create",
+					Usage:     "Create a new group definition from file",
+					ArgsUsage: "<PATH>",
+					Action: func(c *cli.Context) {
+						absPath, err := filepath.Abs(c.Args().First())
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						group, err := marshalGroupFromFile(absPath)
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						err = expApiClient.CreateGroup(group)
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+					},
+				},
 			},
 		},
 
