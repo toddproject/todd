@@ -1,7 +1,7 @@
 ToDD
 ====
 
-> ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) WARNING - ToDD is undergoing [a top-to-bottom rebuild](https://github.com/toddproject/todd/projects/1). As a result, the current state of `master` is entirely unpredictable, and unstable. In the early days of the rebuild, it should not be expected to work at all, or even compile. If you wish to continue to use ToDD in it's initial form, [please check out this release that was taken before this effort began](
+> ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) WARNING - ToDD is undergoing [a top-to-bottom rebuild](https://github.com/orgs/toddproject/projects/1). As a result, the current state of `master` is entirely unpredictable, and unstable. In the early days of the rebuild, it should not be expected to work at all, or even compile. If you wish to continue to use ToDD in it's initial form, [please check out this release that was taken before this effort began](
 https://github.com/toddproject/todd/releases/tag/before-rebuild). ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) ![#f03c15](https://placehold.it/15/f03c15/000000?text=+)
 
 [![Build Status](https://travis-ci.org/toddproject/todd.svg?branch=master)](https://travis-ci.org/toddproject/todd)
