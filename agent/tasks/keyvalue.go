@@ -9,16 +9,15 @@
 package tasks
 
 import (
-	"fmt"
-
 	log "github.com/Sirupsen/logrus"
+	"github.com/pkg/errors"
 
 	"github.com/toddproject/todd/agent/cache"
 	"github.com/toddproject/todd/config"
 )
 
-// KeyValueTask defines this particular task.
-type KeyValueTask struct {
+// KeyValue defines this particular task.
+type KeyValue struct {
 	BaseTask
 	Config config.ToDDConfig `json:"-"`
 	Key    string            `json:"key"`
@@ -27,12 +26,12 @@ type KeyValueTask struct {
 
 // Run contains the logic necessary to perform this task on the agent. This particular task
 // will simply pass a key/value pair to the agent cache to be set
-func (kvt KeyValueTask) Run(ac *cache.AgentCache) error {
-	err := ac.SetKeyValue(kvt.Key, kvt.Value)
+func (t *KeyValue) Run(_ *config.Config, ac *cache.AgentCache, _ Responder) error {
+	err := ac.SetKeyValue(t.Key, t.Value)
 	if err != nil {
-		return fmt.Errorf("KeyValueTask failed - %s:%s", kvt.Key, kvt.Value)
+		return errors.Wrapf(err, "setting %q:%q", t.Key, t.Value)
 	}
-	log.Infof("KeyValueTask successful - %s:%s", kvt.Key, kvt.Value)
 
+	log.Infof("KeyValueTask successful - %s:%s", t.Key, t.Value)
 	return nil
 }

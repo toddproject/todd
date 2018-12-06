@@ -20,6 +20,7 @@ import (
 
 	"github.com/toddproject/todd/agent/defs"
 	"github.com/toddproject/todd/agent/tasks"
+	"github.com/toddproject/todd/agent/testing"
 	"github.com/toddproject/todd/comms"
 	"github.com/toddproject/todd/config"
 	"github.com/toddproject/todd/db"
@@ -132,9 +133,7 @@ func Start(cfg config.Config, trObj objects.TestRunObject, sourceOverrideMap map
 	}
 
 	// Prepare a task for carrying the testrun instruction to the agent
-	var itrTask tasks.InstallTestRunTask
-	itrTask.Type = "InstallTestRun" //TODO(mierdin): This is an extra step. Maybe a factory function for the task could help here?
-	itrTask.Tr = sourceTr
+	itrTask := tasks.NewInstallTestRun(sourceTr)
 
 	// Send testrun to each agent UUID in the sources group
 	// TODO(mierdin): this is something I'd like to improve in the future. Right now this works, and is sort-of resilient, since
@@ -153,9 +152,8 @@ func Start(cfg config.Config, trObj objects.TestRunObject, sourceOverrideMap map
 			Testlet: trObj.Spec.Target.(map[string]interface{})["app"].(string),
 			Args:    trObj.Spec.Target.(map[string]interface{})["args"].(string),
 		}
-		var itrTask tasks.InstallTestRunTask
-		itrTask.Type = "InstallTestRun" //TODO(mierdin): This is an extra step. Maybe a factory function for the task could help here?
-		itrTask.Tr = targetTr
+
+		itrTask := tasks.NewInstallTestRun(targetTr)
 
 		tc, err := comms.NewToDDComms(cfg)
 		if err != nil {
@@ -205,10 +203,10 @@ readyloop:
 		}
 		for _, status := range testStatuses {
 			switch true {
-			case status == "fail":
+			case status == testing.StatusFail:
 				log.Error("Agent reported failure during testing")
 				os.Exit(1)
-			case status != "ready":
+			case status != testing.StatusReady:
 				continue readyloop
 			}
 		}
@@ -223,10 +221,7 @@ readyloop:
 	// If this is a group target type, we want to make sure that the targets are set up and reporting a status of "testing"
 	// before we spin up the source tests
 	if trObj.Spec.TargetType == "group" {
-		var targetTask tasks.ExecuteTestRunTask
-		targetTask.Type = "ExecuteTestRun" //TODO(mierdin): This is an extra step. Maybe a factory function for the task could help here?
-		targetTask.TestUUID = testUUID
-		targetTask.TimeLimit = cfg.Testing.Timeout
+		targetTask := tasks.NewExecuteTestRun(testUUID, cfg.Testing.Timeout)
 
 		// Send testrun to each agent UUID in the targets group
 		for uuid := range testAgentMap["targets"] {
@@ -263,10 +258,10 @@ readyloop:
 
 			for agent, status := range targetStatuses {
 				switch {
-				case status == "fail":
+				case status == testing.StatusFail:
 					log.Errorf("Agent %s reported failure during testing", agent)
 					os.Exit(1)
-				case status != "testing":
+				case status != testing.StatusTesting:
 					log.Errorf("%s is not ready, so the sources must wait!!", agent)
 					continue targetsreadyloop
 				}
@@ -276,10 +271,7 @@ readyloop:
 	}
 
 	// The targets are ready; execute testing on the source agents
-	var sourceTask tasks.ExecuteTestRunTask
-	sourceTask.Type = "ExecuteTestRun" //TODO(mierdin): This is an extra step. Maybe a factory function for the task could help here?
-	sourceTask.TestUUID = testUUID
-	sourceTask.TimeLimit = 30
+	sourceTask := tasks.NewExecuteTestRun(testUUID, 30)
 
 	// Send testrun to each agent UUID in the targets group
 	for uuid := range testAgentMap["sources"] {
@@ -297,10 +289,10 @@ finishedloop:
 		}
 		for agent, status := range testStatuses {
 			switch true {
-			case status == "fail":
+			case status == testing.StatusFail:
 				log.Errorf("Agent %s reported failure during testing", agent)
 				os.Exit(1)
-			case status != "finished":
+			case status != testing.StatusFinished:
 				continue finishedloop
 			}
 		}

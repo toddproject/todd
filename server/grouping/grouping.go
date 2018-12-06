@@ -90,22 +90,12 @@ next:
 	}
 
 	for uuid, groupName := range groupmap {
-		setGroupTask := tasks.SetGroupTask{
-			GroupName: groupName,
-		}
-
-		setGroupTask.Type = "SetGroup" //TODO(mierdin): Apparently this is necessary because inner type promotion doesn't apply for struct literals?
-		tc.Package.SendTask(uuid, setGroupTask)
+		tc.Package.SendTask(uuid, tasks.NewSetGroup(groupName))
 	}
 
 	// need to send a message to all agents that weren't in groupmap to set their group to nothing
 	for x := range lonelyAgents {
-		setGroupTask := tasks.SetGroupTask{
-			GroupName: "",
-		}
-
-		setGroupTask.Type = "SetGroup" //TODO(mierdin): Apparently this is necessary because inner type promotion doesn't apply for struct literals?
-		tc.Package.SendTask(lonelyAgents[x].UUID, setGroupTask)
+		tc.Package.SendTask(lonelyAgents[x].UUID, tasks.NewSetGroup(""))
 	}
 }
 
