@@ -20,6 +20,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/toddproject/todd/agent/defs"
+	"github.com/toddproject/todd/agent/testing"
 	"github.com/toddproject/todd/config"
 	"github.com/toddproject/todd/server/objects"
 )
@@ -380,7 +381,7 @@ func (etcddb *etcdDB) InitTestRun(testUUID string, testAgentMap map[string]map[s
 
 			var initAgentProps = map[string]string{
 				"group":  group,
-				"status": "init",
+				"status": testing.StatusInit,
 				// Intentially omitting the "testdata" key here, because we will create it when the testdata is ready
 			}
 

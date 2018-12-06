@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/toddproject/todd/agent/testing"
 )
 
 // Run is responsible for activating an existing testrun object
@@ -204,17 +206,17 @@ func listenForTestStatus(conf map[string]string) error {
 			firstMessage = true
 		}
 
-		init, ready, testing, finished := 0, 0, 0, 0
+		init, ready, inTest, finished := 0, 0, 0, 0
 		for _, status := range statuses {
 
 			switch status {
-			case "init":
+			case testing.StatusInit:
 				init++
-			case "ready":
+			case testing.StatusReady:
 				ready++
-			case "testing":
-				testing++
-			case "finished":
+			case testing.StatusTesting:
+				inTest++
+			case testing.StatusFinished:
 				finished++
 			default:
 				return errors.New("Invalid status received.")
@@ -228,7 +230,7 @@ func listenForTestStatus(conf map[string]string) error {
 			recordCount,
 			init,
 			ready,
-			testing,
+			inTest,
 			finished,
 		)
 

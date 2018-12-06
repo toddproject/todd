@@ -9,53 +9,53 @@
 package tasks
 
 import (
-	"errors"
-	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path"
+	"path/filepath"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/pkg/errors"
 	"github.com/toddproject/todd/agent/cache"
+	"github.com/toddproject/todd/config"
 )
 
-// DownloadAssetTask defines this particular task. It contains definitions not only for the task message, but
+// DownloadAsset defines this particular task. It contains definitions not only for the task message, but
 // also HTTPClient, filesystem, and i/o system abstractions to be more conducive to unit testing.
-type DownloadAssetTask struct {
+type DownloadAsset struct {
 	BaseTask
-	HTTPClient   *http.Client `json:"-"`
-	Fs           FileSystem   `json:"-"`
-	Ios          IoSystem     `json:"-"`
-	CollectorDir string       `json:"-"`
-	Assets       []string     `json:"assets"`
-	TestletDir   string       `json:"-"`
+	Assets []string `json:"assets"`
+}
+
+// NewDownloadAsset returns a new DownloadAsset task.
+func NewDownloadAsset(assets []string) *DownloadAsset {
+	return &DownloadAsset{
+		BaseTask: BaseTask{Type: TypeDownloadAsset},
+		Assets:   assets,
+	}
 }
 
 // Run contains the logic necessary to perform this task on the agent. This particular task will download all required assets,
 // copy them into the appropriate directory, and ensure that the execute permission is given to each collector file.
-func (dat DownloadAssetTask) Run(*cache.AgentCache) error {
-
+func (t *DownloadAsset) Run(cfg *config.Config, _ *cache.AgentCache, _ Responder) error {
 	// Iterate over the slice of collectors and download them.
-	for x := range dat.Assets {
-
-		assetURL := dat.Assets[x]
-
-		assetDir := ""
-
+	baseAssetDir := filepath.Join(cfg.LocalResources.OptDir, "assets")
+	for _, assetURL := range t.Assets {
+		var assetDir string
 		switch {
 		case strings.Contains(assetURL, "factcollectors"):
-			assetDir = dat.CollectorDir
+			assetDir = filepath.Join(baseAssetDir, "factcollectors")
 		case strings.Contains(assetURL, "testlets"):
-			assetDir = dat.TestletDir
+			assetDir = filepath.Join(baseAssetDir, "testlets")
 		default:
-			errorMsg := "Invalid asset download URL received"
-			log.Error(errorMsg)
-			return errors.New(errorMsg)
+			return errors.New("invalid asset download URL received")
 		}
 
-		err := dat.downloadAsset(assetURL, assetDir)
+		err := t.downloadAsset(assetURL, assetDir)
 		if err != nil {
-			log.Error(err)
-			return err
+			return errors.Wrapf(err, "downloading %q to %s", assetURL, assetDir)
 		}
 	}
 
@@ -63,46 +63,34 @@ func (dat DownloadAssetTask) Run(*cache.AgentCache) error {
 }
 
 // downloadAsset will download an asset at the specified URL, into the specified directory
-func (dat DownloadAssetTask) downloadAsset(url, directory string) error {
-
-	tokens := strings.Split(url, "/")
-	fileName := tokens[len(tokens)-1]
-	fileName = fmt.Sprintf("%s/%s", directory, fileName)
-	log.Info("Downloading ", url, " to ", fileName)
+func (t *DownloadAsset) downloadAsset(url, directory string) error {
+	path := filepath.Join(directory, path.Base(url))
+	log.Infof("Downloading %q to %s.", url, path)
 
 	// TODO: What if this already exists? Consider checking file existence first with io.IsExist?
-	output, err := dat.Fs.Create(fileName)
+	output, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
 	if err != nil {
-		return fmt.Errorf("Error while creating %s - %v", fileName, err)
+		return errors.Wrapf(err, "creating %s", path)
 	}
 	defer output.Close()
 
-	response, err := dat.HTTPClient.Get(url)
+	response, err := http.Get(url)
 	if err != nil {
 		// If we have a problem retrieving the testlet, we want to return immediately,
 		// instead of writing an empty file to disk
-		log.Errorf("Error while downloading '%s': %v", url, err)
-		return err
+		return errors.Wrapf(err, "making HTTP call")
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		log.Errorf("Error while downloading '%s': %s", url, response.Status)
-		return err
+		return errors.Errorf("%s response", response.Status)
 	}
 
-	n, err := dat.Ios.Copy(output, response.Body)
+	n, err := io.Copy(output, response.Body)
 	if err != nil {
-		log.Error(fmt.Sprintf("Error while writing '%s' to disk", url))
-		return err
-	}
-	err = dat.Fs.Chmod(fileName, 0744)
-	if err != nil {
-
-		// TODO(mierdin): currently unhandled; may want to do something further
-		log.Warn("Problem setting execute permission on downloaded script")
+		return errors.Wrapf(err, "writing to %q", path)
 	}
 
-	log.Info(n, " bytes downloaded.")
+	log.Infof("%d bytes downloaded.", n)
 	return nil
 }
