@@ -9,29 +9,32 @@
 package tasks
 
 import (
-	"fmt"
-
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/toddproject/todd/agent/cache"
 	"github.com/toddproject/todd/config"
 )
 
-// DeleteTestDataTask embeds BaseTask and adds the necessary fields to transport a
+// DeleteTestData embeds BaseTask and adds the necessary fields to transport a
 // DeleteTestData task through comms
-type DeleteTestDataTask struct {
+type DeleteTestData struct {
 	BaseTask
-	Config   config.Config `json:"-"`
-	TestUUID string        `json:"key"`
+	TestUUID string `json:"key"`
+}
+
+// NewDeleteTestData returns a new DeleteTestData tasks.
+func NewDeleteTestData(uuid string) *DeleteTestData {
+	return &DeleteTestData{
+		BaseTask: BaseTask{Type: TypeDeleteTestData},
+		TestUUID: uuid,
+	}
 }
 
 // Run contains the logic necessary to perform this task on the agent.
-func (dtdt DeleteTestDataTask) Run(ac *cache.AgentCache) error {
-	err := ac.DeleteTestRun(dtdt.TestUUID)
-	if err != nil {
-		return fmt.Errorf("DeleteTestDataTask failed - %s", dtdt.TestUUID)
+func (t *DeleteTestData) Run(_ *config.Config, ac *cache.AgentCache, _ Responder) error {
+	err := ac.DeleteTestRun(t.TestUUID)
+	if err == nil {
+		log.Infof("DeleteTestDataTask successful - %s", t.TestUUID)
 	}
-	log.Infof("DeleteTestDataTask successful - %s", dtdt.TestUUID)
-
-	return nil
+	return err
 }

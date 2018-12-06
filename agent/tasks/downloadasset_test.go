@@ -9,54 +9,84 @@
 package tasks
 
 import (
-	"fmt"
+	"bytes"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
+	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/toddproject/todd/config"
 )
 
 // TODO(mierdin): This unit test works, but you need other tests to test for problems
 // with the i/o system, filesystem, or http call. (rainy day testing)
 
-func TestTaskRun(t *testing.T) {
+// TODO: write a test that removes the "factcollectors" and tests for an error
 
+func TestTaskRun(t *testing.T) {
+	responseData := []byte("responsetext")
 	// Test server that always responds with 200 code, and specific payload
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		w.Header().Set("Content-Type", "application/text")
-		fmt.Fprintln(w, `responsetext`)
+		w.Write(responseData)
 	}))
 	defer server.Close()
 
-	// Make a transport that reroutes all traffic to the example server
-	transport := &http.Transport{
-		Proxy: func(req *http.Request) (*url.URL, error) {
-			return url.Parse(server.URL)
-		},
+	tmpDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	outPath := filepath.Join(tmpDir, "assets", "factcollectors")
+	err = os.MkdirAll(outPath, 0755)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	// Make a http.Client with the transport
-	httpClient := &http.Client{Transport: transport}
+	assets := []string{
+		server.URL + "/factcollectors/test_collector_1",
+		server.URL + "/factcollectors/test_collector_2",
+		server.URL + "/factcollectors/test_collector_3",
+	}
 
 	// setup task object
-	task := DownloadAssetTask{
-		HTTPClient:   httpClient,
-		Fs:           mockFS{},
-		Ios:          mockIoSys{},
-		CollectorDir: "/tmp",
-		Assets: []string{
-			"http://127.0.0.1:8080/factcollectors/test_collector_1",
-			"http://127.0.0.1:8080/factcollectors/test_collector_2",
-			"http://127.0.0.1:8080/factcollectors/test_collector_3", // write a test that removes the "factcollectors" and tests for an error
-		},
-	}
+	task := NewDownloadAsset(assets)
+
+	var cfg config.Config
+	cfg.LocalResources.OptDir = tmpDir
 
 	// Run task
-	err := task.Run(nil)
-
+	err = task.Run(&cfg, nil, nil)
 	if err != nil {
-		t.Fatalf("DownloadCollectors failed in some way and wasn't supposed to")
+		t.Fatal("DownloadCollectors failed:", err)
 	}
 
+	finfos, err := ioutil.ReadDir(outPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(finfos) != len(assets) {
+		t.Errorf("wanted %d files, got %d", len(assets), len(finfos))
+	}
+
+	for _, asset := range assets {
+		path := filepath.Join(outPath, filepath.Base(asset))
+		data, err := ioutil.ReadFile(path)
+		if os.IsNotExist(err) {
+			t.Errorf("wanted %q to be created, but it wasn't", path)
+			continue
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !bytes.Equal(data, responseData) {
+			t.Errorf("wanted %q to contains %q, but it was %q", path, string(responseData), string(data))
+		}
+	}
 }

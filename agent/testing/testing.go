@@ -19,6 +19,15 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+// Testing status constants.
+const (
+	StatusInit     = "init"
+	StatusReady    = "ready"
+	StatusTesting  = "testing"
+	StatusFinished = "finished"
+	StatusFail     = "fail"
+)
+
 var (
 
 	// This map provides name redirection so that the native testlets can use names that don't

@@ -20,6 +20,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/toddproject/todd/agent/defs"
+	"github.com/toddproject/todd/agent/testing"
 	pb "github.com/toddproject/todd/api/exp/generated"
 	"github.com/toddproject/todd/config"
 	"github.com/toddproject/todd/server/objects"
@@ -368,9 +369,9 @@ func (etcddb *etcdDB) InitTestRun(testUUID string, testAgentMap map[string]map[s
 			// Create agent entry within this testrun
 			log.Debugf("Creating agent entry within testrun %s for agent %s", testUUID, agent)
 			_, err = etcddb.keysAPI.Set(
-				context.Background(),                                        // context
+				context.Background(), // context
 				fmt.Sprintf("/todd/testruns/%s/agents/%s", testUUID, agent), // key
-				"", // value
+				"",                            // value
 				&client.SetOptions{Dir: true}, //optional args
 			)
 			if err != nil {
@@ -381,14 +382,14 @@ func (etcddb *etcdDB) InitTestRun(testUUID string, testAgentMap map[string]map[s
 
 			var initAgentProps = map[string]string{
 				"group":  group,
-				"status": "init",
+				"status": testing.StatusInit,
 				// Intentially omitting the "testdata" key here, because we will create it when the testdata is ready
 			}
 
 			for k, v := range initAgentProps {
 
 				_, err = etcddb.keysAPI.Set(
-					context.Background(),                                              // context
+					context.Background(), // context
 					fmt.Sprintf("/todd/testruns/%s/agents/%s/%s", testUUID, agent, k), // key
 					v,   // value
 					nil, //optional args
@@ -409,7 +410,7 @@ func (etcddb *etcdDB) InitTestRun(testUUID string, testAgentMap map[string]map[s
 // SetAgentTestStatus sets the status for an agent in a particular testrun key.
 func (etcddb *etcdDB) SetAgentTestStatus(testUUID, agentUUID, status string) error {
 	_, err := etcddb.keysAPI.Set(
-		context.Background(),                                                   // context
+		context.Background(), // context
 		fmt.Sprintf("/todd/testruns/%s/agents/%s/status", testUUID, agentUUID), // key
 		status, // value
 		nil,    //optional args
@@ -426,7 +427,7 @@ func (etcddb *etcdDB) SetAgentTestStatus(testUUID, agentUUID, status string) err
 // SetAgentTestData sets the post-test data for an agent in a particular testrun
 func (etcddb *etcdDB) SetAgentTestData(testUUID, agentUUID, testData string) error {
 	_, err := etcddb.keysAPI.Set(
-		context.Background(),                                                     // context
+		context.Background(), // context
 		fmt.Sprintf("/todd/testruns/%s/agents/%s/testdata", testUUID, agentUUID), // key
 		testData, // value
 		nil,      //optional args

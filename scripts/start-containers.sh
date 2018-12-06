@@ -81,7 +81,7 @@ function startinfra {
         rabbitmq:3-management > /dev/null
 
     echo "Starting InfluxDB"
-    docker run -d --net todd-network --volume=/var/influxdb:/data --name influx -p 8083:8083 -p 8086:8086 tutum/influxdb:0.9 > /dev/null
+    docker run -d --net todd-network --volume=/var/influxdb:/data -e PRE_CREATE_DB="todd_metrics" --name influx -p 8083:8083 -p 8086:8086 tutum/influxdb:0.9 > /dev/null
     echo "Starting Grafana"
     docker run -d --net todd-network --volume=/var/lib/grafana:/var/lib/grafana --name grafana -p 3000:3000 grafana/grafana > /dev/null
 }
