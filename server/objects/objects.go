@@ -12,7 +12,7 @@ import (
 	"encoding/json"
 	"os"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // BaseObject is the "base" struct for all objects in ToDD. All metadata shared by all todd objects should be stored here.

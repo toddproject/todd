@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	pb "github.com/toddproject/todd/api/exp/generated"
 
 	"github.com/dgraph-io/badger"

@@ -12,22 +12,22 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	influx "github.com/influxdata/influxdb/client/v2"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/toddproject/todd/config"
 )
 
 // newInfluxDB is a factory function that produces a new instance of influxDB with the configuration
 // loaded and ready to be used.
-func newInfluxDB(cfg config.Config) *influxDB {
+func newInfluxDB(cfg config.ToDDConfig) *influxDB {
 	var ifdb influxDB
 	ifdb.config = cfg
 	return &ifdb
 }
 
 type influxDB struct {
-	config config.Config
+	config config.ToDDConfig
 }
 
 // WriteData will write the resulting testrun data to influxdb as a batch of points - containing
@@ -36,7 +36,7 @@ func (ifdb influxDB) WriteData(testUUID, testRunName, groupName string, testData
 
 	// Make client
 	c, err := influx.NewHTTPClient(influx.HTTPConfig{
-		Addr: fmt.Sprintf("http://%s:%s", ifdb.config.TSDB.Host, ifdb.config.TSDB.Port),
+		Addr: fmt.Sprintf("http://%s:%s", "127.0.0.1", "8080"),
 	})
 	if err != nil {
 		log.Error("Error creating InfluxDB Client: ", err.Error())
@@ -46,7 +46,7 @@ func (ifdb influxDB) WriteData(testUUID, testRunName, groupName string, testData
 
 	// Create a new point batch
 	bp, err := influx.NewBatchPoints(influx.BatchPointsConfig{
-		Database:  ifdb.config.TSDB.DatabaseName,
+		Database:  "todd_metrics",
 		Precision: "s",
 	})
 	if err != nil {
