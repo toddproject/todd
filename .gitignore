@@ -20,3 +20,7 @@ docs/virtualenv/
 api/exp/generated/
 *.pem
 *.csr
+*buildinfo.go
+tmpdb/
+coverage.html
+

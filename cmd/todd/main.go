@@ -23,7 +23,7 @@ func main() {
 
 	// TODO(mierdin): autogen like in syringe
 	app.Version = "v0.1.0"
-	app.Usage = "A highly extensible framework for distributed testing on demand"
+	app.Usage = "The Distributed Network-Service-Level Assertion Engine"
 
 	var host, port string
 
@@ -68,13 +68,7 @@ func main() {
 					Name:  "list",
 					Usage: "List group definitions",
 					Action: func(c *cli.Context) {
-						groups, err := ListGroups(
-							map[string]string{
-								"host": host,
-								"port": port,
-							},
-						)
-						fmt.Println(groups)
+						groups, err := ListGroups()
 						if err != nil {
 							fmt.Println(err)
 							os.Exit(1)
@@ -149,6 +143,51 @@ func main() {
 						}
 					},
 				},
+			},
+		},
+		{
+			Name:    "agent",
+			Aliases: []string{"ag", "agents"},
+			Usage:   "Work with ToDD agents",
+			Subcommands: []cli.Command{
+				{
+					Name:  "list",
+					Usage: "List registered agents",
+					Action: func(c *cli.Context) {
+						agents, err := ListAgents()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						} else {
+
+							// Convert to interface slice
+							// https://github.com/golang/go/wiki/InterfaceSlice
+							// var resourceSlice []api.ToDDResource = make([]api.ToDDResource, len(agents))
+							var resourceSlice []interface{}
+							for _, d := range agents {
+								// resourceSlice[i] = d
+								resourceSlice = append(resourceSlice, d)
+							}
+
+							// Print resources as table to user
+							PrintResourcesTable(resourceSlice)
+
+						}
+					},
+				},
+				// {
+				// 	Name:  "get",
+				// 	Usage: "Retrieve a single group definition",
+				// 	Action: func(c *cli.Context) {
+				// 		err := GetGroup(
+				// 			c.Args().First(),
+				// 		)
+				// 		if err != nil {
+				// 			fmt.Println(err)
+				// 			os.Exit(1)
+				// 		}
+				// 	},
+				// },
 			},
 		},
 	}

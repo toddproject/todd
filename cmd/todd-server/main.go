@@ -12,9 +12,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	api "github.com/toddproject/todd/api/exp"
 	"github.com/toddproject/todd/persistence"
@@ -50,6 +49,11 @@ func init() {
 }
 
 func main() {
+
+	// TODO(mierdin): Create map of all channel pointers so you just pass it around in one place.
+	// This will form the backbone of how all goroutines communicate in todd-server.
+	// https: //gist.github.com/tmiller/5550127
+	// commsChannels := map[string]*chan interface{}{}
 
 	cfg, err := config.LoadConfigFromEnv()
 	if err != nil {
@@ -111,10 +115,11 @@ func main() {
 	// 	}
 	// }()
 
-	log.Infof("ToDD server v%s. Press any key to exit...\n", toddVersion)
+	log.Infof("ToDD server v%s. Press any key to exit...\n", config.BuildInfo["buildSha"])
 
 	// Sssh, sssh, only dreams now....
-	for {
-		time.Sleep(time.Second * 10) // TODO: Replace with select{}, blocks forever without interrupt
-	}
+	// for {
+	// 	time.Sleep(time.Second * 10) // TODO: Replace with select{}, blocks forever without interrupt
+	// }
+	select {}
 }

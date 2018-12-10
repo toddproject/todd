@@ -13,7 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/toddproject/todd/config"
 	"github.com/toddproject/todd/hostresources"

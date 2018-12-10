@@ -16,6 +16,7 @@ import (
 type ToDDConfig struct {
 	OptDir           string
 	TestingTimeout   int
+	ApiPort          int
 	DefaultInterface string
 	IPAddrOverride   string
 }
@@ -53,14 +54,21 @@ func LoadConfigFromEnv() (*ToDDConfig, error) {
 		config.OptDir = optdir
 	}
 
-	defif := os.Getenv("TODD_DEFAULT_INTERFACE")
+	port, err := strconv.Atoi(os.Getenv("TODD_API_PORT"))
+	if port == 0 || err != nil {
+		config.ApiPort = 50099
+	} else {
+		config.ApiPort = port
+	}
+
+	defif := os.Getenv("TODD_AGENT_DEFAULT_INTERFACE")
 	if defif == "" {
 		config.DefaultInterface = "none"
 	} else {
 		config.DefaultInterface = defif
 	}
 
-	ipaddr := os.Getenv("TODD_IPADDR_OVERRIDE")
+	ipaddr := os.Getenv("TODD_AGENT_IPADDR_OVERRIDE")
 	if ipaddr == "" {
 		config.IPAddrOverride = "none"
 	} else {

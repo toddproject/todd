@@ -16,15 +16,17 @@ import (
 	"reflect"
 	"strings"
 	"text/tabwriter"
-
-	"gopkg.in/yaml.v2"
-
-	pb "github.com/toddproject/todd/api/exp/generated"
 )
 
 // PrintResourcesTable takes an API resource and pretty-prints it to a table, regardless of its fields.
 // use this for general resources that don't need any special output treatment.
 func PrintResourcesTable(resources []interface{}) error {
+
+	if len(resources) == 0 {
+		fmt.Println("None found.")
+		return nil
+	}
+
 	w := new(tabwriter.Writer)
 
 	// Format in tab-separated columns with a tab stop of 8.
@@ -39,6 +41,7 @@ func PrintResourcesTable(resources []interface{}) error {
 
 	// print values for each resource
 	for i := range resources {
+
 		values, err := getResourceValues(resources[i])
 		if err != nil {
 			return err
@@ -77,19 +80,6 @@ func getResourceValues(resource interface{}) ([]string, error) {
 		retSlice = append(retSlice, fmt.Sprintf("%v", valueField.Interface()))
 	}
 	return retSlice, nil
-}
-
-// marshalGroupFromFile creates a new Group instance from a file definition
-func marshalGroupFromFile(absPath string) (*pb.Group, error) {
-	yamlDef, _ := getYAMLDef(absPath)
-
-	var groupObj *pb.Group
-	err := yaml.Unmarshal(yamlDef, &groupObj)
-	if err != nil {
-		return nil, err
-	}
-
-	return groupObj, nil
 }
 
 // getYAMLDef reads YAML from either stdin or from the filename if stdin is empty

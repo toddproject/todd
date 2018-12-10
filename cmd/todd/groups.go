@@ -13,13 +13,14 @@ import (
 	"flag"
 	"fmt"
 
-	// TODO need to fix this, I think it's part of stdlib now so you could kill all vendored deps for this
 	"google.golang.org/grpc"
+	yaml "gopkg.in/yaml.v2"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	pb "github.com/toddproject/todd/api/exp/generated"
 )
 
-func ListGroups(conf map[string]string) ([]*pb.Group, error) {
+func ListGroups() ([]*pb.Group, error) {
 
 	var (
 		serverAddr = flag.String("server_addr", "127.0.0.1:50099", "The server address in the format of host:port")
@@ -33,7 +34,7 @@ func ListGroups(conf map[string]string) ([]*pb.Group, error) {
 	defer conn.Close()
 	client := pb.NewGroupsClient(conn)
 
-	groupList, err := client.ListGroups(context.Background(), &pb.GroupFilter{})
+	groupList, err := client.ListGroups(context.Background(), &empty.Empty{})
 	if err != nil {
 		return nil, err
 	}
@@ -74,4 +75,17 @@ func CreateGroup(group *pb.Group) error {
 	}
 
 	return nil
+}
+
+// marshalGroupFromFile creates a new Group instance from a file definition
+func marshalGroupFromFile(absPath string) (*pb.Group, error) {
+	yamlDef, _ := getYAMLDef(absPath)
+
+	var groupObj *pb.Group
+	err := yaml.Unmarshal(yamlDef, &groupObj)
+	if err != nil {
+		return nil, err
+	}
+
+	return groupObj, nil
 }
