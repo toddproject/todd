@@ -13,21 +13,59 @@ build:
 
 compile:
 
-	# Generate API code
-	rm -rf api/exp/generated/ && mkdir -p api/exp/generated/ && protoc -I api/exp/definitions/ api/exp/definitions/* --go_out=plugins=grpc:api/exp/generated/
+	@echo "Generating protobuf code..."
 
-	# Installing testlets
-	./scripts/gettestlets.sh
+	@rm -f pkg/ui/data/swagger/datafile.go
 
-	# Installing ToDD
-	go install ./cmd/...
+	@rm -f /tmp/datafile.go
+	@rm -f cmd/syringed/buildinfo.go
+
+	@rm -rf api/exp/generated/ && mkdir -p api/exp/generated/
+	@mkdir -p api/exp/swagger/
+
+	@protoc -I api/exp/definitions/ -I. \
+	-I api/exp/definitions/ \
+	  api/exp/definitions/*.proto \
+		-I$$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+		-I$$GOPATH/src/github.com/lyft/protoc-gen-validate \
+	--go_out=plugins=grpc:api/exp/generated/ \
+    --grpc-gateway_out=logtostderr=true,allow_delete_body=true:api/exp/generated/ \
+    --validate_out=lang=go:api/exp/generated/ \
+	--swagger_out=logtostderr=true,allow_delete_body=true:api/exp/swagger/
+
+	@# Adding equivalent YAML tags so we can import lesson definitions into protobuf-created structs
+	# @sed -i'.bak' -e 's/\(protobuf.*json\):"\([^,]*\)/\1:"\2,omitempty" yaml:"\l\2/' api/exp/generated/lessondef.pb.go
+	# @rm -f api/exp/generated/lessondef.pb.go.bak
+
+	@echo "Generating swagger definitions..."
+	@go generate ./api/exp/swagger/
+	@scripts/build-ui.sh
+
+	@echo "Generating build info file..."
+	@scripts/gen-build-info.sh
+
+	# @echo "Installing testlets..."
+	# ./scripts/gettestlets.sh
+
+	@echo "Compiling todd binaries..."
+
+ifeq ($(shell uname), Darwin)
+	@go install ./cmd/...
+else
+	@go install -ldflags "-linkmode external -extldflags -static" ./cmd/...
+endif
+
 
 fmt:
 	go fmt github.com/toddproject/todd/...
 
 test: 
-	go test ./... -cover
-	scripts/start-containers.sh integration
+	go test ./api/... -cover -coverprofile=c.out
+	go tool cover -html=c.out -o coverage.html 
+
+	# scripts/start-containers.sh integration
+
+
 
 lint:
 	scripts/lint.sh

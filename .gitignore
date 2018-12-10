@@ -18,3 +18,5 @@ docs/local/
 *.retry
 docs/virtualenv/
 api/exp/generated/
+*.pem
+*.csr
