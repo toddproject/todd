@@ -84,6 +84,8 @@ func main() {
 	log.Infof("Registered as %d with todd-server", agentId)
 
 	// Should detect server disconnect on this end as well, and reset to "searching" mode when disconnected
+	// Also should think about how to handle test data that didn't get uploaded
+	// Do GRPC messages get delivered reliably?
 
 	select {}
 }

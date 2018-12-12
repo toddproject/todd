@@ -14,6 +14,7 @@ import (
 	"fmt"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -22,12 +23,8 @@ import (
 
 func ListGroups() ([]*pb.Group, error) {
 
-	var (
-		serverAddr = flag.String("server_addr", "127.0.0.1:50099", "The server address in the format of host:port")
-	)
-
-	// TODO(mierdin): Add security options
-	conn, err := grpc.Dial(*serverAddr, grpc.WithInsecure())
+	creds, err := credentials.NewClientTLSFromFile("/Users/mierdin/Code/GO/src/github.com/toddproject/todd/scripts/todd-cert.pem", "")
+	conn, err := grpc.Dial("127.0.0.1:50099", grpc.WithTransportCredentials(creds))
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -130,6 +130,8 @@ func main() {
 							os.Exit(1)
 						}
 
+						// TODO(mierdin): Need to read from stdin by default for all create functions
+
 						group, err := marshalGroupFromFile(absPath)
 						if err != nil {
 							fmt.Println(err)
