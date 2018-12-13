@@ -10,24 +10,17 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	pb "github.com/toddproject/todd/api/exp/generated"
 )
 
-func ListGroups() ([]*pb.Group, error) {
+func ListGroups(conn *grpc.ClientConn) ([]*pb.Group, error) {
 
-	creds, err := credentials.NewClientTLSFromFile("/Users/mierdin/Code/GO/src/github.com/toddproject/todd/scripts/todd-cert.pem", "")
-	conn, err := grpc.Dial("127.0.0.1:50099", grpc.WithTransportCredentials(creds))
-	if err != nil {
-		fmt.Println(err)
-	}
 	defer conn.Close()
 	client := pb.NewGroupsClient(conn)
 
@@ -40,32 +33,22 @@ func ListGroups() ([]*pb.Group, error) {
 
 }
 
-func GetGroup(groupName string) error {
+func GetGroup(conn *grpc.ClientConn, groupName string) error {
 	fmt.Printf("NOT IMPLEMENTED - would have retrieved group %s\n", groupName)
 	return nil
 }
 
-func DeleteGroup(groupName string) error {
+func DeleteGroup(conn *grpc.ClientConn, groupName string) error {
 	fmt.Printf("NOT IMPLEMENTED - would have deleted group %s\n", groupName)
 	return nil
 }
 
-func CreateGroup(group *pb.Group) error {
+func CreateGroup(conn *grpc.ClientConn, group *pb.Group) error {
 
-	var (
-		serverAddr = flag.String("server_addr", "127.0.0.1:50099", "The server address in the format of host:port")
-	)
-
-	// TODO(mierdin): Add security options
-	conn, err := grpc.Dial(*serverAddr, grpc.WithInsecure())
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
 	defer conn.Close()
 	client := pb.NewGroupsClient(conn)
 
-	_, err = client.CreateGroup(context.Background(), group)
+	_, err := client.CreateGroup(context.Background(), group)
 	if err != nil {
 		fmt.Println(err)
 		return err

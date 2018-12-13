@@ -115,11 +115,7 @@ func main() {
 	// 	}
 	// }()
 
-	log.Infof("ToDD server v%s. Press any key to exit...\n", config.BuildInfo["buildSha"])
+	log.Infof("ToDD server (version %s) started.\n", config.BuildInfo["buildSha"])
 
-	// Sssh, sssh, only dreams now....
-	// for {
-	// 	time.Sleep(time.Second * 10) // TODO: Replace with select{}, blocks forever without interrupt
-	// }
 	select {}
 }

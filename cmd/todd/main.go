@@ -57,8 +57,6 @@ func main() {
 	// TODO(mierdin): this is quite large. Should consider breaking this up into more manageable chunks
 	app.Commands = []cli.Command{
 
-		// "todd group ..."
-		// TODO(mierdin) need to document usage of c.Args().First()
 		{
 			Name:    "group",
 			Aliases: []string{"gr", "groups"},
@@ -68,7 +66,14 @@ func main() {
 					Name:  "list",
 					Usage: "List group definitions",
 					Action: func(c *cli.Context) {
-						groups, err := ListGroups()
+
+						conn, err := getServerConn()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						groups, err := ListGroups(conn)
 						if err != nil {
 							fmt.Println(err)
 							os.Exit(1)
@@ -84,7 +89,7 @@ func main() {
 							}
 
 							// Print resources as table to user
-							PrintResourcesTable(resourceSlice)
+							printResourcesTable(resourceSlice)
 
 						}
 					},
@@ -93,7 +98,15 @@ func main() {
 					Name:  "get",
 					Usage: "Retrieve a single group definition",
 					Action: func(c *cli.Context) {
-						err := GetGroup(
+
+						conn, err := getServerConn()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						err = GetGroup(
+							conn,
 							c.Args().First(),
 						)
 						if err != nil {
@@ -106,7 +119,15 @@ func main() {
 					Name:  "delete",
 					Usage: "Delete a group definition",
 					Action: func(c *cli.Context) {
-						err := DeleteGroup(
+
+						conn, err := getServerConn()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						err = DeleteGroup(
+							conn,
 							c.Args().First(),
 						)
 						if err != nil {
@@ -131,6 +152,7 @@ func main() {
 						}
 
 						// TODO(mierdin): Need to read from stdin by default for all create functions
+						// getYAMLDef
 
 						group, err := marshalGroupFromFile(absPath)
 						if err != nil {
@@ -138,7 +160,13 @@ func main() {
 							os.Exit(1)
 						}
 
-						err = CreateGroup(group)
+						conn, err := getServerConn()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						err = CreateGroup(conn, group)
 						if err != nil {
 							fmt.Println(err)
 							os.Exit(1)
@@ -156,7 +184,14 @@ func main() {
 					Name:  "list",
 					Usage: "List registered agents",
 					Action: func(c *cli.Context) {
-						agents, err := ListAgents()
+
+						conn, err := getServerConn()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						agents, err := ListAgents(conn)
 						if err != nil {
 							fmt.Println(err)
 							os.Exit(1)
@@ -172,7 +207,7 @@ func main() {
 							}
 
 							// Print resources as table to user
-							PrintResourcesTable(resourceSlice)
+							printResourcesTable(resourceSlice)
 
 						}
 					},

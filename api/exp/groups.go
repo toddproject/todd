@@ -47,8 +47,6 @@ func (s *server) ListGroups(ctx context.Context, _ *empty.Empty) (*pb.GroupList,
 		return nil, err
 	}
 
-	log.Warn(groups)
-
 	return &pb.GroupList{Groups: groups}, nil
 }
 

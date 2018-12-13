@@ -16,11 +16,27 @@ import (
 	"reflect"
 	"strings"
 	"text/tabwriter"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
-// PrintResourcesTable takes an API resource and pretty-prints it to a table, regardless of its fields.
+// getServerConn creates a grpc client connection, with the appropriate parameters, so all
+// client functions can consistently use the same connection parameters.
+func getServerConn() (*grpc.ClientConn, error) {
+	serverAddr := "127.0.0.1:50099"
+
+	creds, err := credentials.NewClientTLSFromFile("/Users/mierdin/Code/GO/src/github.com/toddproject/todd/scripts/todd-cert.pem", "")
+	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(creds))
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Unable to reach todd-server at %s\n", serverAddr))
+	}
+	return conn, nil
+}
+
+// printResourcesTable takes an API resource and pretty-prints it to a table, regardless of its fields.
 // use this for general resources that don't need any special output treatment.
-func PrintResourcesTable(resources []interface{}) error {
+func printResourcesTable(resources []interface{}) error {
 
 	if len(resources) == 0 {
 		fmt.Println("None found.")
@@ -65,6 +81,9 @@ func getResourceFields(resource interface{}) ([]string, error) {
 	val := reflect.ValueOf(resource).Elem()
 	for i := 0; i < val.NumField(); i++ {
 		typeField := val.Type().Field(i)
+		if strings.Contains(strings.ToUpper(typeField.Name), "XXX") {
+			continue
+		}
 		retSlice = append(retSlice, strings.ToUpper(typeField.Name))
 	}
 	return retSlice, nil

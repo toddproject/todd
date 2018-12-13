@@ -41,7 +41,7 @@ func StartAPI(cfg *config.ToDDConfig, p *persistence.Persistence) error {
 		cfg:         cfg,
 		persistence: p,
 		agentMut:    &sync.Mutex{},
-		agents:      map[int32]*agentInstance{},
+		agents:      map[string]*agentInstance{},
 	}
 
 	pb.RegisterGroupsServer(s, apiServer)
@@ -55,9 +55,11 @@ func StartAPI(cfg *config.ToDDConfig, p *persistence.Persistence) error {
 }
 
 type server struct {
-	// groups      []*pb.Group
-	agents      map[int32]*agentInstance
-	agentMut    *sync.Mutex
+	// Agents not stored in database, but rather kept in memory. So we need the map and a mutex
+	agents   map[string]*agentInstance
+	agentMut *sync.Mutex
+
+	// Persistence used for all resource we persist to disk
 	persistence *persistence.Persistence
 	cfg         *config.ToDDConfig
 }

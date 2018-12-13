@@ -6,7 +6,7 @@
 	https://github.com/toddproject/todd/blob/master/LICENSE
 */
 
-package hostresources
+package main
 
 import (
 	"testing"

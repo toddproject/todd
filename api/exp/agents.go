@@ -9,7 +9,9 @@ import (
 	pb "github.com/toddproject/todd/api/exp/generated"
 )
 
-// Provides agent details alongside the stream for communicating with this agent
+// agentInstance is used to bundle an instance of an agent with the stream
+// used to communicate with it. We store this in memory so we can access each agent's
+// properties, and it's communication, all in one place as an API server property
 type agentInstance struct {
 	agent  *pb.Agent
 	stream *pb.Agents_AgentRegisterServer
@@ -51,7 +53,7 @@ func (s *server) AgentRegister(stream pb.Agents_AgentRegisterServer) error {
 		stream: &stream,
 	}
 	s.agentMut.Unlock()
-	log.Infof("Agent %d has registered in group %s.", agentID, group)
+	log.Infof("Agent %s has registered in group %s.", agentID, group)
 
 	// Asynchronously handle all additional messages from this agent
 	go func() {
@@ -65,7 +67,7 @@ func (s *server) AgentRegister(stream pb.Agents_AgentRegisterServer) error {
 				log.Error(err)
 				return
 			}
-			log.Infof("Received additional message from %d: %v", agentID, in)
+			log.Infof("Received additional message from %s: %v", agentID, in)
 
 			// if err := stream.Send(&pb.ServerMessage{}); err != nil {
 			// 	log.Error("FOO3")
@@ -79,8 +81,8 @@ func (s *server) AgentRegister(stream pb.Agents_AgentRegisterServer) error {
 	<-waitc
 
 	// Agent disconnected; clean it up
-	if agentID != 0 {
-		log.Infof("Agent %d has disconnected.", agentID)
+	if agentID != "" {
+		log.Infof("Agent %s has disconnected.", agentID)
 		s.agentMut.Lock()
 		delete(s.agents, agentID)
 		s.agentMut.Unlock()
