@@ -7,6 +7,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	log "github.com/sirupsen/logrus"
 	pb "github.com/toddproject/todd/api/exp/generated"
+	"google.golang.org/grpc/peer"
 )
 
 // agentInstance is used to bundle an instance of an agent with the stream
@@ -21,8 +22,8 @@ type agentInstance struct {
 // map. It receives incoming messages in a goroutine, and the function is held open as long as the Agent connection remains active
 func (s *server) AgentRegister(stream pb.Agents_AgentRegisterServer) error {
 
-	// Perform grouping once, right here. None of this background process BS.
-	//
+	clientInfo, _ := peer.FromContext(stream.Context())
+
 	// Create wait channel to detect disconnect of agent from this stream
 	waitc := stream.Context().Done()
 
@@ -39,12 +40,15 @@ func (s *server) AgentRegister(stream pb.Agents_AgentRegisterServer) error {
 
 	agentID := in.Agent.Id
 
+	// Assign a group on registration (Previous versions of ToDD assigned groups asynchronously on
+	// a loop. This is much cleaner).
 	group, err := s.assignGroup(in.Agent)
 	if err != nil {
 		return err
 	}
 
 	in.Agent.Group = group
+	in.Agent.Addr = clientInfo.Addr.String()
 
 	// Register agent with in-memory map
 	s.agentMut.Lock()

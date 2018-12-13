@@ -21,11 +21,10 @@ message Agent {
     AgentFacts facts = 2;
     string group = 3;
 
-    // We store the incoming IP address (v4 and v6) of the requesting agent, as this will allow us to
+    // We store the incoming IP address (v4 or v6) of the requesting agent, as this will allow us to
     // know what to test against for group-to-group applications. These are not set by the agent,
     // but rather by the server on initial connection.
-    string v4addr = 4;
-    string v6addr = 5;
+    string addr = 4;
 }
 
 
