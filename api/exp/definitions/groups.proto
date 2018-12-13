@@ -1,41 +1,24 @@
 syntax = "proto3";
 package todd.api.exp;
 
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
 
-// The Groups service definition.
-service Groups {   
-  // Get all Groups with filter - A server-to-client streaming RPC.
-  // rpc GetGroups(GroupFilter) returns (stream Group) {}
-
-  // Get Groups with filter - simple RPC
-  rpc GetGroups(GroupFilter) returns (GroupList) {}
-
-  // Create a new Group - A simple RPC 
+service Groups {
+  rpc ListGroups(google.protobuf.Empty) returns (GroupList) {}
   rpc CreateGroup (Group) returns (GroupResponse) {}
 }
 
-// Request message for creating a new Group
 message Group {
-  int32 id = 1;  // Unique ID number for a Group.
-  string name  = 2;
+  int32 id = 1;
+  string name  = 2 [(validate.rules).string.min_len = 3];
   
   message Match {
-
-    // This was an attempt to make this field an enum. Worked great except YAML
-    // unmarshal didn't know how to handle it unless the field value was an int.
-    // Need to figure out how to do this while preserving the proper UX
-    //
-    // enum Type {
-    //   HOSTNAME = 0;
-    //   SUBNET = 1;
-    // }
-    // Type type = 1;
-
-    string type = 1;
-    string statement = 2;
+    string type = 1 [(validate.rules).string = {in: ["hostname", "subnet"]}];
+    string statement = 2 [(validate.rules).string.min_len = 3];
   }
 
-  repeated Match matches = 3;
+  repeated Match matches = 3 [(validate.rules).repeated.min_items = 1];
 }
 
 message GroupList{
@@ -49,14 +32,3 @@ message GroupResponse {
 message GroupFilter {    
   string keyword = 1;
 }
-
-
-
-// Saw this: https://github.com/golang/protobuf/issues/263
-// Can this be used to also offer REST?
-// // List returns all available platforms
-// rpc List(GetPlatformsRequest) returns (GetPlatformsResponse) {
-//   option (google.api.http) = {
-//     get: "/v1/platforms"
-//   };
-// }

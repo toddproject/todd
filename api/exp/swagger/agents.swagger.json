@@ -1,0 +1,73 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "agents.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {},
+  "definitions": {
+    "expAgent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "facts": {
+          "$ref": "#/definitions/expAgentFacts"
+        },
+        "group": {
+          "type": "string"
+        },
+        "addr": {
+          "type": "string",
+          "description": "We store the incoming IP address (v4 or v6) of the requesting agent, as this will allow us to\nknow what to test against for group-to-group applications. These are not set by the agent,\nbut rather by the server on initial connection."
+        }
+      }
+    },
+    "expAgentFacts": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "addresses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "AgentFacts houses all facts that can be used in a group definition. These are all properties that\nare determined by the agent, and explicitly passed in the request to the server."
+    },
+    "expAgentList": {
+      "type": "object",
+      "properties": {
+        "agents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/expAgent"
+          }
+        }
+      }
+    },
+    "expServerMessage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  }
+}

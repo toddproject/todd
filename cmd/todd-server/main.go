@@ -12,21 +12,17 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
-	toddapi "github.com/toddproject/todd/api/_old/server"
 	api "github.com/toddproject/todd/api/exp"
+	"github.com/toddproject/todd/persistence"
 
-	"github.com/toddproject/todd/comms"
 	"github.com/toddproject/todd/config"
-	"github.com/toddproject/todd/db"
-	"github.com/toddproject/todd/hostresources"
-	"github.com/toddproject/todd/server/grouping"
 )
 
 var (
+	// TODO(mierdin): generate this automatically like you did in Syringe
 	toddVersion = "0.0.1"
 	// Command-line Arguments
 	argVersion string
@@ -54,72 +50,72 @@ func init() {
 
 func main() {
 
-	cfg, err := config.GetConfig(argVersion)
+	// TODO(mierdin): Create map of all channel pointers so you just pass it around in one place.
+	// This will form the backbone of how all goroutines communicate in todd-server.
+	// https: //gist.github.com/tmiller/5550127
+	// commsChannels := map[string]*chan interface{}{}
+
+	cfg, err := config.LoadConfigFromEnv()
 	if err != nil {
 		log.Fatalf("Problem getting configuration: %v\n", err)
 	}
 
 	// Start serving collectors and testlets, and retrieve map of names and hashes
-	assets := newAssetConfig(cfg)
+	// assets := newAssetConfig(cfg)
 
-	// Perform database initialization tasks
-	tdb, err := db.NewToddDB(cfg)
+	p, err := persistence.NewPersistence(cfg)
 	if err != nil {
 		log.Fatalf("Error setting up database: %v\n", err)
 	}
 
-	if err := tdb.Init(); err != nil {
-		log.Fatalf("Error initializing database: %v\n", err)
-	}
+	// if err := tdb.Init(); err != nil {
+	// 	log.Fatalf("Error initializing database: %v\n", err)
+	// }
 
 	// Initialize API
-	var tapi toddapi.ToDDApi
-	go func() {
-		log.Fatal(tapi.Start(cfg))
-	}()
+	// var tapi toddapi.ToDDApi
+	// go func() {
+	// 	log.Fatal(tapi.Start(cfg))
+	// }()
 
-	var api api.ToDDApiExp
 	go func() {
-		log.Fatal(api.Start(cfg))
+		log.Fatal(api.StartAPI(cfg, p))
 	}()
 
 	// Start listening for agent advertisements
-	tc, err := comms.NewToDDComms(cfg)
-	if err != nil {
-		log.Fatalf("Problem connecting to comms: %v\n", err)
-	}
+	// tc, err := comms.NewToDDComms(cfg)
+	// if err != nil {
+	// 	log.Fatalf("Problem connecting to comms: %v\n", err)
+	// }
 
 	// Get default IP address for the server.
 	// This address is primarily used to inform the agents of the URL they should use to download assets
-	defaultaddr, err := hostresources.GetDefaultInterfaceIP(cfg.LocalResources.DefaultInterface, cfg.LocalResources.IPAddrOverride)
-	if err != nil {
-		log.Fatalf("Unable to derive address from configured DefaultInterface: %v", err)
-	}
+	// defaultaddr, err := hostresources.GetDefaultInterfaceIP(cfg.LocalResources.DefaultInterface, cfg.LocalResources.IPAddrOverride)
+	// if err != nil {
+	// 	log.Fatalf("Unable to derive address from configured DefaultInterface: %v", err)
+	// }
 
-	assetURLPrefix := fmt.Sprintf("http://%s:%s", defaultaddr, cfg.Assets.Port)
+	// assetURLPrefix := fmt.Sprintf("http://%s:%s", defaultaddr, cfg.Assets.Port)
 
-	go func() {
-		for {
-			err := tc.Package.ListenForAgent(assets, assetURLPrefix)
-			if err != nil {
-				log.Fatalf("Error listening for ToDD Agents")
-			}
-		}
-	}()
+	// go func() {
+	// 	for {
+	// 		err := tc.Package.ListenForAgent(assets, assetURLPrefix)
+	// 		if err != nil {
+	// 			log.Fatalf("Error listening for ToDD Agents")
+	// 		}
+	// 	}
+	// }()
 
 	// Kick off group calculation in background
-	go func() {
-		for {
-			log.Info("Beginning group calculation")
-			grouping.CalculateGroups(cfg)
-			time.Sleep(time.Second * time.Duration(cfg.Grouping.Interval))
-		}
-	}()
+	// go func() {
+	// 	for {
+	// 		log.Info("Beginning group calculation")
+	// 		grouping.CalculateGroups(cfg)
+	// 		time.Sleep(time.Second * time.Duration(cfg.Grouping.Interval))
+	// 	}
+	// }()
 
-	log.Infof("ToDD server v%s. Press any key to exit...\n", toddVersion)
+	log.Infof("ToDD server (version %s) started.\n", config.BuildInfo["buildSha"])
 
-	// Sssh, sssh, only dreams now....
-	for {
-		time.Sleep(time.Second * 10) // TODO: Replace with select{}, blocks forever without interrupt
-	}
+	select {}
 }

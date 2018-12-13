@@ -16,20 +16,20 @@ import (
 	"os"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/toddproject/todd/agent/defs"
 	"github.com/toddproject/todd/agent/tasks"
 	"github.com/toddproject/todd/agent/testing"
 	"github.com/toddproject/todd/comms"
 	"github.com/toddproject/todd/config"
-	"github.com/toddproject/todd/db"
 	"github.com/toddproject/todd/hostresources"
+	db "github.com/toddproject/todd/persistence"
 	"github.com/toddproject/todd/server/objects"
 	"github.com/toddproject/todd/server/tsdb"
 )
 
-func Start(cfg config.Config, trObj objects.TestRunObject, sourceOverrideMap map[string]string) string {
+func Start(cfg *config.ToDDConfig, trObj objects.TestRunObject, sourceOverrideMap map[string]string) string {
 
 	// Generate UUID for test
 	testUUID := hostresources.GenerateUUID()

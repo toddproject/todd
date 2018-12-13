@@ -1,0 +1,64 @@
+syntax = "proto3";
+package todd.api.exp;
+
+import "google/protobuf/empty.proto";
+
+service Agents {   
+
+  // TODO(mierdin): MUST be authenticated, potentially different auth than other endpoints.
+  // TODO(mierdin): Will have to provide initial agent defs via AgentTaskResult
+  // TODO(mierdin): Should also perform grouping here, once, on registration.
+  rpc AgentRegister(stream AgentMessage) returns (stream ServerMessage) {}
+
+  rpc ListAgents(google.protobuf.Empty) returns (AgentList) {}
+  rpc GetAgent(AgentFilter) returns (Agent) {}
+
+}
+
+
+message Agent {
+    string id = 1;
+    AgentFacts facts = 2;
+    string group = 3;
+
+    // We store the incoming IP address (v4 or v6) of the requesting agent, as this will allow us to
+    // know what to test against for group-to-group applications. These are not set by the agent,
+    // but rather by the server on initial connection.
+    string addr = 4;
+}
+
+
+// AgentFacts houses all facts that can be used in a group definition. These are all properties that
+// are determined by the agent, and explicitly passed in the request to the server.
+message AgentFacts {
+    string hostname = 1;
+    repeated string addresses = 2;
+}
+
+message AgentFilter {
+    int32 id = 1;
+}
+
+message AgentList {
+    repeated Agent agents = 1;
+}
+
+message ServerMessage {
+    int32 id = 1;
+}
+
+message AgentMessage {
+    int32 id = 1;
+    Agent agent = 2;
+}
+
+// Can you download assets via grpc?
+message DownloadAssetTask {
+    int32 id = 1;
+}
+
+// TODO We can trigger the testrun, but we don't want them to run until we've confirmed they've all received the message, so
+// they all run at the same time. Need to think about this
+message TriggerTestrunTask {
+    int32 id = 1;
+}

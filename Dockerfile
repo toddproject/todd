@@ -1,4 +1,4 @@
-FROM golang:1.9 AS build
+FROM golang:1.10 as build-env
 MAINTAINER Matt Oswalt <matt@keepingitclassless.net> (@mierdin)
 
 LABEL version="0.1"
@@ -26,9 +26,7 @@ RUN go get google.golang.org/grpc
 
 # Install ToDD
 COPY . /go/src/github.com/toddproject/todd
-
 RUN cd /go/src/github.com/toddproject/todd && GO15VENDOREXPERIMENT=1 make && make install
-
 RUN cp /go/src/github.com/toddproject/todd/etc/* /etc/todd
 
 
@@ -50,3 +48,10 @@ COPY --from=build /go/bin/todd* /usr/local/bin/
 COPY --from=build /etc/todd/* /etc/todd/
 
 CMD ["/usr/local/bin/todd"]
+
+# Copy binaries into new minimalist image
+# TODO(mierdin): DNS lookups not working right in scratch. I tried debian and it just blew chunks. Need to look into a solution for this
+# FROM scratch
+# COPY --from=build-env /go/bin/syringed /usr/bin/syringed
+# COPY --from=build-env /go/bin/syrctl /usr/bin/syrctl
+# CMD ["/usr/bin/syringed"]

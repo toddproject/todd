@@ -14,20 +14,16 @@ import (
 	"path/filepath"
 
 	cli "github.com/codegangsta/cli"
-	capi "github.com/toddproject/todd/api/_old/client"
-	api "github.com/toddproject/todd/api/exp"
-	expClient "github.com/toddproject/todd/api/exp/client"
 )
 
 func main() {
 
-	var clientAPI capi.ClientAPI
-	var expApiClient expClient.APIExpClient
-
 	app := cli.NewApp()
 	app.Name = "todd"
+
+	// TODO(mierdin): autogen like in syringe
 	app.Version = "v0.1.0"
-	app.Usage = "A highly extensible framework for distributed testing on demand"
+	app.Usage = "The Distributed Network-Service-Level Assertion Engine"
 
 	var host, port string
 
@@ -48,100 +44,36 @@ func main() {
 	}
 
 	// TODO(mierdin): This MAY not work. These vars may not execute until after app.Run
-	clientAPI.Conf = map[string]string{
-		"host": host,
-		"port": port,
-	}
-	expApiClient.Conf = map[string]string{
-		"host": host,
-		"port": port,
-	}
+	// clientAPI.Conf = map[string]string{
+	// 	"host": host,
+	// 	"port": port,
+	// }
+	// expApiClient.Conf = map[string]string{
+	// 	"host": host,
+	// 	"port": port,
+	// }
 
 	// ToDD Commands
 	// TODO(mierdin): this is quite large. Should consider breaking this up into more manageable chunks
 	app.Commands = []cli.Command{
 
-		// "todd agents ..."
-		{
-			Name:  "agents",
-			Usage: "Show ToDD agent information",
-			Action: func(c *cli.Context) {
-				agents, err := clientAPI.Agents(
-					map[string]string{
-						"host": host,
-						"port": port,
-					},
-					c.Args().Get(0),
-				)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-				err = clientAPI.DisplayAgents(agents, !(c.Args().Get(0) == ""))
-				if err != nil {
-					fmt.Println("Problem displaying agents (client-side)")
-				}
-			},
-		},
-
-		// "todd create ..."
-		{
-			Name:  "create",
-			Usage: "Create ToDD object (group, testrun, etc.)",
-			Action: func(c *cli.Context) {
-
-				err := clientAPI.Create(
-					map[string]string{
-						"host": host,
-						"port": port,
-					},
-					c.Args().Get(0),
-				)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-			},
-		},
-
-		// "todd delete ..."
-		{
-			Name:  "delete",
-			Usage: "Delete ToDD object",
-			Action: func(c *cli.Context) {
-				err := clientAPI.Delete(
-					map[string]string{
-						"host": host,
-						"port": port,
-					},
-					c.Args().Get(0),
-					c.Args().Get(1),
-				)
-				if err != nil {
-					fmt.Printf("ERROR: %s\n", err)
-					fmt.Println("(Are you sure you provided the right object type and/or label?)")
-					os.Exit(1)
-				}
-			},
-		},
-
-		// "todd group ..."
-		// TODO(mierdin) need to document usage of c.Args().First()
 		{
 			Name:    "group",
-			Aliases: []string{"gr"},
+			Aliases: []string{"gr", "groups"},
 			Usage:   "Work with ToDD groups",
 			Subcommands: []cli.Command{
 				{
 					Name:  "list",
 					Usage: "List group definitions",
 					Action: func(c *cli.Context) {
-						groups, err := expApiClient.ListGroups(
-							map[string]string{
-								"host": host,
-								"port": port,
-							},
-						)
+
+						conn, err := getServerConn()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						groups, err := ListGroups(conn)
 						if err != nil {
 							fmt.Println(err)
 							os.Exit(1)
@@ -149,13 +81,15 @@ func main() {
 
 							// Convert to interface slice
 							// https://github.com/golang/go/wiki/InterfaceSlice
-							var resourceSlice []api.ToDDResource = make([]api.ToDDResource, len(groups))
-							for i, d := range groups {
-								resourceSlice[i] = d
+							// var resourceSlice []api.ToDDResource = make([]api.ToDDResource, len(groups))
+							var resourceSlice []interface{}
+							for _, d := range groups {
+								// resourceSlice[i] = d
+								resourceSlice = append(resourceSlice, d)
 							}
 
 							// Print resources as table to user
-							PrintResourcesTable(resourceSlice)
+							printResourcesTable(resourceSlice)
 
 						}
 					},
@@ -164,7 +98,15 @@ func main() {
 					Name:  "get",
 					Usage: "Retrieve a single group definition",
 					Action: func(c *cli.Context) {
-						err := expApiClient.GetGroup(
+
+						conn, err := getServerConn()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						err = GetGroup(
+							conn,
 							c.Args().First(),
 						)
 						if err != nil {
@@ -177,7 +119,15 @@ func main() {
 					Name:  "delete",
 					Usage: "Delete a group definition",
 					Action: func(c *cli.Context) {
-						err := expApiClient.DeleteGroup(
+
+						conn, err := getServerConn()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						err = DeleteGroup(
+							conn,
 							c.Args().First(),
 						)
 						if err != nil {
@@ -201,13 +151,22 @@ func main() {
 							os.Exit(1)
 						}
 
+						// TODO(mierdin): Need to read from stdin by default for all create functions
+						// getYAMLDef
+
 						group, err := marshalGroupFromFile(absPath)
 						if err != nil {
 							fmt.Println(err)
 							os.Exit(1)
 						}
 
-						err = expApiClient.CreateGroup(group)
+						conn, err := getServerConn()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						err = CreateGroup(conn, group)
 						if err != nil {
 							fmt.Println(err)
 							os.Exit(1)
@@ -216,50 +175,56 @@ func main() {
 				},
 			},
 		},
-
-		// "todd run ..."
 		{
-			Name: "run",
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "j",
-					Usage: "Output test data for this testrun when finished",
-				},
-				cli.BoolFlag{
-					Name:  "y",
-					Usage: "Skip confirmation and run referenced testrun immediately",
-				},
-				cli.StringFlag{
-					Name:  "source-group",
-					Usage: "The name of the source group",
-				},
-				cli.StringFlag{
-					Name:  "source-app",
-					Usage: "The app to run for this test",
-				},
-				cli.StringFlag{
-					Name:  "source-args",
-					Usage: "Arguments to pass to the testlet",
-				},
-			},
-			Usage: "Execute an already uploaded testrun object",
-			Action: func(c *cli.Context) {
-				err := clientAPI.Run(
-					map[string]string{
-						"host":        host,
-						"port":        port,
-						"sourceGroup": c.String("source-group"),
-						"sourceApp":   c.String("source-app"),
-						"sourceArgs":  c.String("source-args"),
+			Name:    "agent",
+			Aliases: []string{"ag", "agents"},
+			Usage:   "Work with ToDD agents",
+			Subcommands: []cli.Command{
+				{
+					Name:  "list",
+					Usage: "List registered agents",
+					Action: func(c *cli.Context) {
+
+						conn, err := getServerConn()
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						}
+
+						agents, err := ListAgents(conn)
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)
+						} else {
+
+							// Convert to interface slice
+							// https://github.com/golang/go/wiki/InterfaceSlice
+							// var resourceSlice []api.ToDDResource = make([]api.ToDDResource, len(agents))
+							var resourceSlice []interface{}
+							for _, d := range agents {
+								// resourceSlice[i] = d
+								resourceSlice = append(resourceSlice, d)
+							}
+
+							// Print resources as table to user
+							printResourcesTable(resourceSlice)
+
+						}
 					},
-					c.Args().Get(0),
-					c.Bool("j"),
-					c.Bool("y"),
-				)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
+				},
+				// {
+				// 	Name:  "get",
+				// 	Usage: "Retrieve a single group definition",
+				// 	Action: func(c *cli.Context) {
+				// 		err := GetGroup(
+				// 			c.Args().First(),
+				// 		)
+				// 		if err != nil {
+				// 			fmt.Println(err)
+				// 			os.Exit(1)
+				// 		}
+				// 	},
+				// },
 			},
 		},
 	}

@@ -1,7 +1,0 @@
----
-type: group
-label: red
-spec:
-    group: red
-    matches:
-    - hostname: "todd-agent-.*[02468]"

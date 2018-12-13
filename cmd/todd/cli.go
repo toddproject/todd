@@ -17,15 +17,32 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"gopkg.in/yaml.v2"
-
-	api "github.com/toddproject/todd/api/exp"
-	pb "github.com/toddproject/todd/api/exp/generated"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
-// PrintResourcesTable takes an API resource and pretty-prints it to a table, regardless of its fields.
+// getServerConn creates a grpc client connection, with the appropriate parameters, so all
+// client functions can consistently use the same connection parameters.
+func getServerConn() (*grpc.ClientConn, error) {
+	serverAddr := "127.0.0.1:50099"
+
+	creds, err := credentials.NewClientTLSFromFile("/Users/mierdin/Code/GO/src/github.com/toddproject/todd/scripts/todd-cert.pem", "")
+	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(creds))
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Unable to reach todd-server at %s\n", serverAddr))
+	}
+	return conn, nil
+}
+
+// printResourcesTable takes an API resource and pretty-prints it to a table, regardless of its fields.
 // use this for general resources that don't need any special output treatment.
-func PrintResourcesTable(resources []api.ToDDResource) error {
+func printResourcesTable(resources []interface{}) error {
+
+	if len(resources) == 0 {
+		fmt.Println("None found.")
+		return nil
+	}
+
 	w := new(tabwriter.Writer)
 
 	// Format in tab-separated columns with a tab stop of 8.
@@ -40,6 +57,7 @@ func PrintResourcesTable(resources []api.ToDDResource) error {
 
 	// print values for each resource
 	for i := range resources {
+
 		values, err := getResourceValues(resources[i])
 		if err != nil {
 			return err
@@ -58,18 +76,21 @@ func PrintResourcesTable(resources []api.ToDDResource) error {
 // TODO (mierdin): Should consider just adding a field to each resource definition to keep track of the headers that are useful
 // in a list format. That way we don't have to do this reflect. print only the headers the object says are useful in a "list" operation
 // and print verbosely in a "get" operation, just like st2 does.
-func getResourceFields(resource api.ToDDResource) ([]string, error) {
+func getResourceFields(resource interface{}) ([]string, error) {
 	var retSlice []string
 	val := reflect.ValueOf(resource).Elem()
 	for i := 0; i < val.NumField(); i++ {
 		typeField := val.Type().Field(i)
+		if strings.Contains(strings.ToUpper(typeField.Name), "XXX") {
+			continue
+		}
 		retSlice = append(retSlice, strings.ToUpper(typeField.Name))
 	}
 	return retSlice, nil
 }
 
 // getResourceValues retrieves a resource's field values and returns them as a slice of strings
-func getResourceValues(resource api.ToDDResource) ([]string, error) {
+func getResourceValues(resource interface{}) ([]string, error) {
 	var retSlice []string
 	val := reflect.ValueOf(resource).Elem()
 	for i := 0; i < val.NumField(); i++ {
@@ -78,19 +99,6 @@ func getResourceValues(resource api.ToDDResource) ([]string, error) {
 		retSlice = append(retSlice, fmt.Sprintf("%v", valueField.Interface()))
 	}
 	return retSlice, nil
-}
-
-// marshalGroupFromFile creates a new Group instance from a file definition
-func marshalGroupFromFile(absPath string) (*pb.Group, error) {
-	yamlDef, _ := getYAMLDef(absPath)
-
-	var groupObj *pb.Group
-	err := yaml.Unmarshal(yamlDef, &groupObj)
-	if err != nil {
-		return nil, err
-	}
-
-	return groupObj, nil
 }
 
 // getYAMLDef reads YAML from either stdin or from the filename if stdin is empty

@@ -9,21 +9,21 @@
 package main
 
 import (
-	"errors"
+	"context"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	"google.golang.org/grpc"
 
-	"github.com/toddproject/todd/agent/cache"
-	"github.com/toddproject/todd/agent/defs"
-	"github.com/toddproject/todd/agent/facts"
-	"github.com/toddproject/todd/agent/responses"
-	"github.com/toddproject/todd/comms"
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/credentials"
+
+	pb "github.com/toddproject/todd/api/exp/generated"
+
 	"github.com/toddproject/todd/config"
-	"github.com/toddproject/todd/hostresources"
 )
 
 // Command-line Arguments
@@ -50,122 +50,78 @@ func init() {
 }
 
 func main() {
-
-	cfg, err := config.GetConfig(argConfig)
+	_, err := config.LoadConfigFromEnv()
 	if err != nil {
 		os.Exit(1)
 	}
 
-	// Set up cache
-	ac, err := cache.New(cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer ac.Close()
+	log.Infof("ToDD agent (version %s) started.\n", config.BuildInfo["buildSha"])
 
-	// Generate UUID
-	uuid := hostresources.GenerateUUID()
-	err = ac.SetKeyValue("uuid", uuid)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Infof("ToDD Agent Activated: %s", uuid)
-
-	// Start test data reporting service
-	go watchForFinishedTestRuns(cfg, ac)
-
-	// Construct comms package
-	tc, err := comms.NewAgentComms(cfg, ac)
-	if err != nil {
-		os.Exit(1)
-	}
-
-	// Spawn goroutine to listen for tasks issued by server
-	go func() {
-		for {
-			err := tc.Package.ListenForTasks(uuid)
-			if err != nil {
-				log.Warn("ListenForTasks reported a failure. Trying again...")
-			}
-		}
-	}()
-
-	// Watch for changes to group membership
-	go tc.Package.WatchForGroup()
-
-	// Get default IP address for the server.
-	// This address is primarily used so that the server knows how to orchestrate tests.
-	// (i.e. This agent publishes it's default address, and the server instructs other agents to target it in tests)
-	defaultaddr, err := hostresources.GetDefaultInterfaceIP(cfg.LocalResources.DefaultInterface, cfg.LocalResources.IPAddrOverride)
-	if err != nil {
-		log.Fatalf("Unable to derive address from configured DefaultInterface: %v", err)
-	}
-
-	// Gather assets here as a map, and refer to a key in that map in the below struct
-	gatheredAssets := GetLocalAssets(cfg)
-
-	fcts, err := facts.GetFacts(cfg)
-	if err != nil {
-		log.Errorf("Error gathering facts: %v", err)
-	}
-
-	// Continually advertise agent status into message queue
-	for {
-		// Create an AgentAdvert instance to represent this particular agent
-		me := defs.AgentAdvert{
-			UUID:           uuid,
-			DefaultAddr:    defaultaddr,
-			FactCollectors: gatheredAssets["factcollectors"],
-			Testlets:       gatheredAssets["testlets"],
-			Facts:          fcts,
-			LocalTime:      time.Now().UTC(),
-		}
-
-		// Advertise this agent
-		err = tc.Package.AdvertiseAgent(me)
-		if err != nil {
-			log.Error("Failed to advertise agent after several retries")
-		}
-
-		time.Sleep(10 * time.Second) // TODO(moswalt): make configurable
-	}
-
-}
-
-// watchForFinishedTestRuns simply watches the local cache for any test runs that have test data.
-// It will periodically look at the table and send any present test data back to the server as a response.
-// When the server has successfully received this data, it will send a task back to this specific agent
-// to delete this row from the cache.
-func watchForFinishedTestRuns(cfg config.Config, ac *cache.AgentCache) error {
-	agentUUID, err := ac.GetKeyValue("uuid")
-	if err != nil {
-		return err
-	}
+	// Generate UUID for this agent.
+	agentId := GenerateUUID()
+	log.Debugf("UUID is %s", agentId)
 
 	for {
 
-		time.Sleep(5000 * time.Millisecond)
-
-		testruns, err := ac.GetFinishedTestRuns()
+		log.Info("Attempting to find server...")
+		creds, _ := credentials.NewClientTLSFromFile("/Users/mierdin/Code/GO/src/github.com/toddproject/todd/scripts/todd-cert.pem", "")
+		conn, err := grpc.Dial("127.0.0.1:50099", grpc.WithTransportCredentials(creds), grpc.WithBlock(), grpc.WithTimeout(15*time.Second))
 		if err != nil {
-			log.Error("Problem retrieving finished test runs")
-			return errors.New("Problem retrieving finished test runs")
+			log.Error(err)
+			continue
+		}
+		defer conn.Close()
+
+		client := pb.NewAgentsClient(conn)
+		stream, err := client.AgentRegister(context.Background())
+		if err != nil {
+			log.Error(err)
 		}
 
-		for testUUID, testData := range testruns {
+		if err := stream.Send(&pb.AgentMessage{
+			Agent: &pb.Agent{
+				Id: agentId,
+				Facts: &pb.AgentFacts{
+					Hostname: "uraj",
+				},
+			},
+		}); err != nil {
+			log.Error(err)
+		}
 
-			log.Debug("Found ripe testrun: ", testUUID)
+		log.Info("Connected and registered to todd-server.")
 
-			tc, err := comms.NewToDDComms(cfg)
-			if err != nil {
-				return err
+		// Create wait channel to detect disconnect of agent from this stream
+		waitc := stream.Context().Done()
+
+		// Asynchronously handle all additional messages from this agent
+		go func() {
+			for {
+				in, err := stream.Recv()
+				if err == io.EOF {
+					log.Errorf("Detected EOF in stream: %s", err)
+					return
+				}
+				if err != nil {
+					log.Error(err)
+					return
+				}
+
+				log.Debug(in)
+
+				// if err := stream.Send(&pb.ServerMessage{}); err != nil {
+				// 	log.Error("FOO3")
+				// 	return
+				// }
+
 			}
+		}()
 
-			utdr := responses.NewUploadTestData(agentUUID, testUUID, testData)
-			tc.Package.SendResponse(utdr)
+		// Block until agent disconnects.
+		<-waitc
 
-		}
-
+		// Should detect server disconnect on this end as well, and reset to "searching" mode when disconnected
+		// Also should think about how to handle test data that didn't get uploaded
+		// Do GRPC messages get delivered reliably?
 	}
 }
