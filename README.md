@@ -1,7 +1,7 @@
 ToDD
 ====
 
-> **IMPORTANT NOTE** - This code is frozen. The existing version of ToDD was functional, but has a lot of problems. We're currently in the process of rebuilding ToDD [over here](https://github.com/toddproject/toddnew). This repo, however, is left at the last commit made in the old design, and you can continue to use it in this state. Note that new issues and PRs are likely to be ignored on this repo until we get the new project off the ground.
+> **NOTE** - This project is frozen for now. As of the last released version, ToDD had accomplished much of what it set out to accomplish in the "proof of concept" phase, but didn't move past that stage very far. If you want to use the code as it stands, please check out the latest released tag [here](https://github.com/toddproject/todd/releases/tag/before-rebuild). Our hope is that at some point in the near future, we can collaborate on a new design that takes the lessons learned from the first version of ToDD, and makes something much better. Thanks to all that have contributed to ToDD thus far.
 
 [![Build Status](https://travis-ci.org/toddproject/todd.svg?branch=master)](https://travis-ci.org/toddproject/todd)
 [![Documentation Status](https://readthedocs.org/projects/todd/badge/?version=latest)](http://todd.readthedocs.org/en/latest/?badge=latest)
