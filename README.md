@@ -1,7 +1,7 @@
 ToDD
 ====
 
-> **NOTE** - I started this project in 2015, as part of my effort to learn the Go programming language. I really enjoyed working on this project, but have learned a lot since then. So, I've decided to archive this repository while I figure out what I want to do next. If you want to use the code as it stands, please check out the latest released tag [here](https://github.com/toddproject/todd/releases/tag/before-rebuild). My hope is that at some point in the near future, I can collaborate with some like-minded folks on a new design that takes the lessons learned from the first version of ToDD, and makes something much better. Thanks to all that have contributed to ToDD thus far.
+> **NOTE** - I started this project in 2015, as part of my very first efforts to learn the Go programming language. I really enjoyed working on this project, but have learned a lot since then. So, I've decided to archive this repository while I figure out what I want to do next. If you want to use the code as it stands, please check out the latest released tag [here](https://github.com/toddproject/todd/releases/tag/before-rebuild). My hope is that at some point in the near future, I can collaborate with some like-minded folks on a new design that takes the lessons learned from the first version of ToDD, and makes something much better. Thanks to all that have contributed to ToDD thus far.
 
 [![Build Status](https://travis-ci.org/toddproject/todd.svg?branch=master)](https://travis-ci.org/toddproject/todd)
 [![Documentation Status](https://readthedocs.org/projects/todd/badge/?version=latest)](http://todd.readthedocs.org/en/latest/?badge=latest)
