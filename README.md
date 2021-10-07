@@ -1,15 +1,13 @@
 ToDD
 ====
 
-> **NOTE** - This project is frozen for now. As of the last released version, ToDD had accomplished much of what it set out to accomplish in the "proof of concept" phase, but didn't move past that stage very far. If you want to use the code as it stands, please check out the latest released tag [here](https://github.com/toddproject/todd/releases/tag/before-rebuild). Our hope is that at some point in the near future, we can collaborate on a new design that takes the lessons learned from the first version of ToDD, and makes something much better. Thanks to all that have contributed to ToDD thus far.
+> **NOTE** - I started this project in 2015, as part of my effort to learn the Go programming language. I really enjoyed working on this project, but have learned a lot since then. So, I've decided to archive this repository while I figure out what I want to do next. If you want to use the code as it stands, please check out the latest released tag [here](https://github.com/toddproject/todd/releases/tag/before-rebuild). My hope is that at some point in the near future, I can collaborate with some like-minded folks on a new design that takes the lessons learned from the first version of ToDD, and makes something much better. Thanks to all that have contributed to ToDD thus far.
 
 [![Build Status](https://travis-ci.org/toddproject/todd.svg?branch=master)](https://travis-ci.org/toddproject/todd)
 [![Documentation Status](https://readthedocs.org/projects/todd/badge/?version=latest)](http://todd.readthedocs.org/en/latest/?badge=latest)
 [![Go Report Card](https://goreportcard.com/badge/github.com/toddproject/todd)](https://goreportcard.com/report/github.com/toddproject/todd)
 
 ToDD stands for "Testing on Demand: Distributed!". ToDD is an extensible framework for providing natively distributed testing on demand.
-
-> ToDD should be considered "early alpha" status at this point. Current efforts are focused primarily at increasing test coverage and greater reliability, in order to move ToDD into a more stable, beta status.
 
 # Overview
 
